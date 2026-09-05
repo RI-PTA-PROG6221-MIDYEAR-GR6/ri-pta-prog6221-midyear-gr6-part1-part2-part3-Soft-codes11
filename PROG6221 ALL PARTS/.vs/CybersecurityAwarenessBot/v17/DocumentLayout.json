@@ -1,0 +1,122 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\PROG6221 ALL PARTS.csproj|c:\\users\\student\\documents\\github\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-soft-codes11\\prog6221 all parts\\prog6221 all parts\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\PROG6221 ALL PARTS.csproj|solutionrelative:prog6221 all parts\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|c:\\users\\student\\documents\\github\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-soft-codes11\\prog6221 all parts\\prog6221 all parts\\consoleui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|solutionrelative:prog6221 all parts\\consoleui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|c:\\users\\student\\documents\\github\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-soft-codes11\\prog6221 all parts\\prog6221 all parts\\responsemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|solutionrelative:prog6221 all parts\\responsemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|c:\\users\\student\\documents\\github\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-soft-codes11\\prog6221 all parts\\prog6221 all parts\\chatbot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|solutionrelative:prog6221 all parts\\chatbot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|c:\\users\\student\\documents\\github\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-soft-codes11\\prog6221 all parts\\prog6221 all parts\\cybersecurityawarenessbot.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|solutionrelative:prog6221 all parts\\cybersecurityawarenessbot.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|c:\\users\\student\\documents\\github\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-soft-codes11\\prog6221 all parts\\prog6221 all parts\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3FBBFECF-DF51-4B65-9BFA-63F3224B0C03}|PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj|solutionrelative:prog6221 all parts\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ResponseManager.cs",
+              "DocumentMoniker": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\ResponseManager.cs",
+              "RelativeDocumentMoniker": "PROG6221 ALL PARTS\\ResponseManager.cs",
+              "ToolTip": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\ResponseManager.cs",
+              "RelativeToolTip": "PROG6221 ALL PARTS\\ResponseManager.cs",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAQwD0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-05T18:52:26.865Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ConsoleUI.cs",
+              "DocumentMoniker": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\ConsoleUI.cs",
+              "RelativeDocumentMoniker": "PROG6221 ALL PARTS\\ConsoleUI.cs",
+              "ToolTip": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\ConsoleUI.cs",
+              "RelativeToolTip": "PROG6221 ALL PARTS\\ConsoleUI.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAUwCEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-05T18:51:40.581Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ChatBot.cs",
+              "DocumentMoniker": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\ChatBot.cs",
+              "RelativeDocumentMoniker": "PROG6221 ALL PARTS\\ChatBot.cs",
+              "ToolTip": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\ChatBot.cs",
+              "RelativeToolTip": "PROG6221 ALL PARTS\\ChatBot.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-05T18:48:35.948Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\User.cs",
+              "RelativeDocumentMoniker": "PROG6221 ALL PARTS\\User.cs",
+              "ToolTip": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\User.cs",
+              "RelativeToolTip": "PROG6221 ALL PARTS\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-05T18:48:09.043Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "PROG6221 ALL PARTS.csproj",
+              "DocumentMoniker": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj",
+              "RelativeDocumentMoniker": "PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj",
+              "ToolTip": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj",
+              "RelativeToolTip": "PROG6221 ALL PARTS\\CybersecurityAwarenessBot.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-08-25T12:06:50.342Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\Program.cs",
+              "RelativeDocumentMoniker": "PROG6221 ALL PARTS\\Program.cs",
+              "ToolTip": "C:\\Users\\Student\\Documents\\GitHub\\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\\PROG6221 ALL PARTS\\PROG6221 ALL PARTS\\Program.cs",
+              "RelativeToolTip": "PROG6221 ALL PARTS\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-04T12:30:26.951Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
