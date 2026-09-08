@@ -1,5 +1,4 @@
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\bin\Debug\net9.0\CybersecurityAwarenessBot.exe
-C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\bin\Debug\net9.0\AI.wav
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\bin\Debug\net9.0\CybersecurityAwarenessBot.deps.json
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\bin\Debug\net9.0\CybersecurityAwarenessBot.runtimeconfig.json
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\bin\Debug\net9.0\CybersecurityAwarenessBot.dll
@@ -18,3 +17,4 @@ C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\obj\Debug\net9.0\CybersecurityAwarenessBot.pdb
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\obj\Debug\net9.0\CybersecurityAwarenessBot.genruntimeconfig.cache
 C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\obj\Debug\net9.0\ref\CybersecurityAwarenessBot.dll
+C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS\PROG6221 ALL PARTS\bin\Debug\net9.0\Assets\greetings.wav

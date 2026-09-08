@@ -9,18 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\greetings.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\greetings.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Windows.Extensions" Version="10.0.11" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="AI.wav">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include=".github\workflows\" />
-    <Folder Include="Assets\" />
   </ItemGroup>
 
 </Project>

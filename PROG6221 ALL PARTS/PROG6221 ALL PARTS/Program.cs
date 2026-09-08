@@ -1,36 +1,18 @@
 ﻿using CybersecurityAwarenessBot;
 
-           /* string logo = @"        /\/\               /\        /\         /\          /\         /\         /\                 /\                /\       
- /‾‾‾‾‾‾  \ ‾‾‾‾‾‾| |‾‾‾‾‾‾  \‾‾‾‾‾‾‾  \ |‾‾‾‾|‾  \ \‾‾‾‾‾‾‾  \\‾‾‾‾‾‾‾  \ /‾‾‾‾‾‾  \‾‾‾‾‾‾\  |‾‾‾‾|‾  \‾‾‾| |‾‾‾‾|    \ ‾‾‾‾‾‾|
-/     /‾‾‾/‾‾‾‾   | |    |   /|        / |    |   /  \        / |        //     /‾‾‾|    |  \ |    |   /   | |    |    /‾‾‾‾   |
-\    /  /\\   |   | |    |  ‾\|    ‾‾)‾  |       ‾\  /‾‾‾‾‾  /  |    ‾‾)‾ \    /  /\|    |   \|       ‾\   | |    |    \   |   |
-/‾   ‾‾‾ /‾‾  |   |/‾‾‾‾‾‾   /‾   ‾‾‾‾‾\/‾‾‾‾‾‾   /  \   ‾‾‾‾‾\/‾   ‾‾‾‾‾\/‾   ‾‾‾ /|    |   /‾‾‾‾‾‾   /   /‾‾    ‾‾‾\/‾‾  |   |
-‾‾‾‾‾‾‾‾‾‾‾‾‾‾˙‾‾‾˙‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾    ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾  ‾‾‾‾ ‾‾‾‾‾‾‾‾‾‾‾‾‾˙‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾˙‾‾‾˙";
 
-            try {
-                SoundPlayer sound = new SoundPlayer("AI.wav");
-                sound.Play();
-            } catch (Exception ex) {
-                Console.WriteLine("Error!! Audio not found " + ex.Message);
-            }
-            SoundPlayer player = new SoundPlayer("AI.wav");
-            player.Play();
-            Console.WriteLine(logo);
-            Console.WriteLine("Welcome to the Example Program!");
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
 
-            *
-            *
-            */
 
-       namespace CybersecurityAwarenessBot
+
+namespace CybersecurityAwarenessBot
     {
         internal class Program
         {
             static void Main(string[] args)
             {
                 Console.Title = "Cybersecurity Awareness Bot";
+              
+                VoiceGreeting.Play();
 
                 ConsoleUI.DisplayLogo();
 
