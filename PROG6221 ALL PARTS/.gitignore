@@ -1,0 +1,33 @@
+# Visual Studio
+.vs/
+.vscode/
+
+# Build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build files
+*.dll
+*.exe
+*.pdb
+
+# Visual Studio cache files
+*.vsidx
+*.db
+*.db-shm
+*.db-wal
+
+# Temporary files
+*.tmp
+*.log
+
+# Test results
+TestResults/
+*.testlog
+*.testlog.manifest
