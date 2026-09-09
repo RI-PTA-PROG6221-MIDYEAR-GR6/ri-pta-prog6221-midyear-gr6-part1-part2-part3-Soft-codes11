@@ -8,13 +8,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Copy all Assets into output so audio and future assets are always available at runtime -->
   <ItemGroup>
-    <None Remove="Assets\greetings.wav" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Assets\greetings.wav">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Content Include="Assets\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
@@ -22,8 +19,23 @@
     <PackageReference Include="System.Windows.Extensions" Version="10.0.11" />
   </ItemGroup>
 
+  <!-- Keep folder placeholders if required by your repo structure -->
   <ItemGroup>
     <Folder Include=".github\workflows\" />
   </ItemGroup>
+
+  <!-- Use MSBuild checks instead of calling PowerShell-only commands (Test-Path) which fail under cmd -->
+  <Target Name="ConfirmAssetCopied" AfterTargets="Build">
+    <Message Importance="High" Text="Checking for Assets\greetings.wav in $(OutputPath)..." />
+    <!-- Fail the build with a clear MSBuild Error if the asset is missing -->
+    <Error Condition="!Exists('$(OutputPath)Assets\greetings.wav')" Text="Asset 'Assets\greetings.wav' not found in output folder: $(OutputPath)Assets\greetings.wav" />
+  </Target>
+
+  <!-- Show a concise build output listing in a way that works on cmd.exe too -->
+  <Target Name="ShowBuildOutput" AfterTargets="ConfirmAssetCopied">
+    <Message Importance="High" Text="Build output folder (files matching greetings.wav or exe):" />
+    <!-- Use a robust Exec that works in cmd; ContinueOnError keeps the build output readable if dir fails -->
+    <Exec Command="cmd /c dir &quot;$(OutputPath)&quot; /s /b | findstr /i /e &quot;greetings.wav&quot; &amp;&amp; dir &quot;$(OutputPath)&quot; /b | findstr /i /e &quot;.exe&quot;" ContinueOnError="true" />
+  </Target>
 
 </Project>

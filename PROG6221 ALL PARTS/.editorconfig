@@ -1,0 +1,31 @@
+root = true
+
+[*.{cs,csproj,sln}]
+charset = utf-8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+tab_width = 4
+
+# C# specifics
+[*.cs]
+# Use 4 spaces for indentation
+indent_style = space
+indent_size = 4
+csharp_new_line_before_members = true
+csharp_prefer_simple_default_expression = true:warning
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+csharp_prefer_braces = true:error
+dotnet_sort_system_directives_first = true:suggestion
+
+max_line_length = 120
+
+[*.{md,txt}]
+trim_trailing_whitespace = false
+
+[*.{ps1,sh}]
+end_of_line = lf

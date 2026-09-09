@@ -1,0 +1,109 @@
+# PowerShell - run from:
+# PS C:\Users\Student\Documents\GitHub\ri-pta-prog6221-midyear-gr6-part1-part2-part3-Soft-codes11\PROG6221 ALL PARTS>
+
+# 1) Find the first .csproj file under the current directory
+$csproj = Get-ChildItem -Path . -Filter *.csproj -Recurse -File | Select-Object -First 1
+if (-not $csproj) {
+    Write-Error "No .csproj found in this directory tree. Run from the project root."
+    exit 1
+}
+Write-Host "Using project file:" $csproj.FullName
+
+# 2) Ensure Assets folder exists next to the csproj
+$projDir = Split-Path $csproj.FullName
+$assetsDir = Join-Path $projDir 'Assets'
+if (-not (Test-Path $assetsDir)) {
+    New-Item -ItemType Directory -Path $assetsDir | Out-Null
+    Write-Host "Created Assets folder at" $assetsDir
+} else {
+    Write-Host "Assets folder already exists at" $assetsDir
+}
+
+# 3) Ask for the local path to your greetings.wav (you can paste full path)
+$source = Read-Host "Enter full path to your greetings.wav file (press Enter to cancel)"
+if ([string]::IsNullOrWhiteSpace($source)) {
+    Write-Warning "No source path provided. Aborting."
+    exit 1
+}
+if (-not (Test-Path $source)) {
+    Write-Error "Source file not found: $source"
+    exit 1
+}
+
+# 4) Copy WAV into Assets folder
+$dest = Join-Path $assetsDir 'greetings.wav'
+Copy-Item -Path $source -Destination $dest -Force
+Write-Host "Copied greetings.wav to" $dest
+
+# 5) Update the .csproj to copy the WAV to output (idempotent)
+$csprojPath = $csproj.FullName
+$csprojText = Get-Content $csprojPath -Raw
+
+# Prepare the XML snippet to insert
+$snippet = @"
+  <ItemGroup>
+    <None Update="Assets\greetings.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+"@
+
+if ($csprojText -match 'Assets\\greetings\.wav') {
+    Write-Host "Project already configured to copy Assets\greetings.wav to output."
+} else {
+    # Insert snippet before the closing </Project>
+    if ($csprojText -match '</Project>') {
+        $newText = $csprojText -replace '</Project>', ($snippet + "`r`n</Project>")
+        $newText | Set-Content $csprojPath -Encoding UTF8
+        Write-Host "Inserted ItemGroup into $csprojPath"
+    } else {
+        Write-Error "Cannot find closing </Project> tag in csproj. Manual edit required: $csprojPath"
+        exit 1
+    }
+}
+
+# 6) Restore & Build to ensure asset is copied
+Write-Host "Restoring and building project..."
+dotnet restore $csprojPath
+$buildResult = dotnet build $csprojPath --configuration Debug
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Build failed. Inspect the output above for errors."
+} else {
+    Write-Host "Build succeeded."
+}
+
+# 7) Verify presence in build output (net9.0 Debug assumed)
+$outDir = Join-Path $projDir "bin\Debug\net9.0"
+$builtAsset = Join-Path $outDir "Assets\greetings.wav"
+if (Test-Path $builtAsset) {
+    Write-Host "Verified: greetings.wav exists in build output:" $builtAsset
+} else {
+    Write-Warning "greetings.wav not found in build output. Check target framework and build configuration."
+    # attempt to locate anywhere under bin:
+    $found = Get-ChildItem -Path (Join-Path $projDir 'bin') -Filter greetings.wav -Recurse -File -ErrorAction SilentlyContinue
+    if ($found) {
+        Write-Host "Found built copy at:" ($found | Select-Object -First 1).FullName
+    }
+}
+
+# 8) Git add, commit and push - one commit for this change
+git add $dest
+git add $csprojPath
+git commit -m "Add greetings.wav asset and configure project to copy asset to output (Part 1 requirement)"
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "Git commit may have failed (nothing to commit or git not configured). Check 'git status'."
+} else {
+    git push origin HEAD
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "git push failed. Ensure you have permission to push to the repository and the remote exists."
+    } else {
+        Write-Host "Changes pushed to remote."
+    }
+}
+
+# END - remind next steps
+Write-Host ""
+Write-Host "Next steps:"
+Write-Host " - Verify GitHub Actions CI is triggered and shows green."
+Write-Host " - Add README screenshot of CI and create the required presentation video."
+Write-Host " - Make additional meaningful commits (you need a minimum of six commits for the part)."
