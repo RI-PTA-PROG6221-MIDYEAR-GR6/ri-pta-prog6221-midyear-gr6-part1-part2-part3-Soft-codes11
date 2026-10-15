@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>PROG6221_ALL_PARTS</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Copy all Assets into output so audio and future assets are always available at runtime -->
+  <ItemGroup>
+    <Content Include="Assets\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Windows.Extensions" Version="10.0.11" />
+    <!-- Enable System.Speech APIs on Windows at build time for speech synthesis fallback -->
+    <PackageReference Include="System.Speech" Version="4.7.0" />
+  </ItemGroup>
+
+  <!-- Keep folder placeholders if required by your repo structure -->
+  <ItemGroup>
+    <Folder Include=".github\workflows\" />
+  </ItemGroup>
+
+  <!-- Use MSBuild checks instead of calling PowerShell-only commands (Test-Path) which fail under cmd -->
+  <Target Name="ConfirmAssetCopied" AfterTargets="Build">
+    <Message Importance="High" Text="Checking for Assets\greetings.wav in $(OutputPath)..." />
+    <!-- Fail the build with a clear MSBuild Error if the asset is missing -->
+    <Error Condition="!Exists('$(OutputPath)Assets\greetings.wav')" Text="Asset 'Assets\greetings.wav' not found in output folder: $(OutputPath)Assets\greetings.wav" />
+  </Target>
+
+  <!-- Ensure a greetings.wav exists in the project Assets before build by generating it with PowerShell if missing -->
+  <Target Name="EnsureGreetingWav" BeforeTargets="BeforeBuild">
+    <Message Importance="High" Text="Ensuring Assets\greetings.wav exists in project folder..." />
+    <Exec ContinueOnError="true" Command='powershell -NoProfile -ExecutionPolicy Bypass -Command "$out = Join-Path "'$(ProjectDir)'" "Assets\\greetings.wav"; if(-not (Test-Path $out)){ $sampleRate=44100; $bits=16; $channels=1; $duration=0.9; $samples=[int]($sampleRate*$duration); $freq=880.0; $amplitude=0.25*[int]::MaxValue; $fs=[System.IO.File]::Open($out,\"Create\"); $bw=New-Object System.IO.BinaryWriter($fs); $bw.Write([System.Text.Encoding]::ASCII.GetBytes(\"RIFF\")); $byteRate=$sampleRate*$channels*$bits/8; $subChunk2=$samples*$channels*$bits/8; $bw.Write([int](36+$subChunk2)); $bw.Write([System.Text.Encoding]::ASCII.GetBytes(\"WAVE\")); $bw.Write([System.Text.Encoding]::ASCII.GetBytes(\"fmt \")); $bw.Write(16); $bw.Write([short]1); $bw.Write([short]$channels); $bw.Write([int]$sampleRate); $bw.Write([int]$byteRate); $bw.Write([short]($channels*$bits/8)); $bw.Write([short]$bits); $bw.Write([System.Text.Encoding]::ASCII.GetBytes(\"data\")); $bw.Write([int]$subChunk2); for($i=0;$i -lt $samples;$i++){ $t=$i/$sampleRate; $s=[int]([math]::Round($amplitude*[math]::Sin(2*[math]::PI*$freq*$t))); $bw.Write([short]$s) }; $bw.Close() }"' />
+  </Target>
+
+  <!-- Show a concise build output listing in a way that works on cmd.exe too -->
+  <Target Name="ShowBuildOutput" AfterTargets="ConfirmAssetCopied">
+    <Message Importance="High" Text="Build output folder (files matching greetings.wav or exe):" />
+    <!-- Use a robust Exec that works in cmd; ContinueOnError keeps the build output readable if dir fails -->
+    <Exec Command="cmd /c dir &quot;$(OutputPath)&quot; /s /b | findstr /i /e &quot;greetings.wav&quot; &amp;&amp; dir &quot;$(OutputPath)&quot; /b | findstr /i /e &quot;.exe&quot;" ContinueOnError="true" />
+  </Target>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <PackageReference Include="System.Windows.Extensions" Version="10.0.11" />
+    <!-- Enable System.Speech APIs on Windows at build time for speech synthesis fallback -->
+    <PackageReference Include="System.Speech" Version="4.7.0" />
   </ItemGroup>
 
   <!-- Keep folder placeholders if required by your repo structure -->
@@ -29,6 +31,12 @@
     <Message Importance="High" Text="Checking for Assets\greetings.wav in $(OutputPath)..." />
     <!-- Fail the build with a clear MSBuild Error if the asset is missing -->
     <Error Condition="!Exists('$(OutputPath)Assets\greetings.wav')" Text="Asset 'Assets\greetings.wav' not found in output folder: $(OutputPath)Assets\greetings.wav" />
+  </Target>
+
+  <!-- Ensure a greetings.wav exists in the project Assets before build by generating it with PowerShell if missing -->
+  <Target Name="EnsureGreetingWav" BeforeTargets="BeforeBuild">
+    <Message Importance="High" Text="Ensuring Assets\greetings.wav exists in project folder..." />
+    <Exec ContinueOnError="true" Command='powershell -NoProfile -ExecutionPolicy Bypass -File "$(ProjectDir)Tools\GenerateGreeting.ps1" "$(ProjectDir)Assets\greetings.wav"' />
   </Target>
 
   <!-- Show a concise build output listing in a way that works on cmd.exe too -->

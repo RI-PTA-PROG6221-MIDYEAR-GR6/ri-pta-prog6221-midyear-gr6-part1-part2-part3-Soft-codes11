@@ -1,0 +1,85 @@
+﻿using System.Media;
+using System.IO;
+using System;
+
+namespace CybersecurityAwarenessBot
+{
+    public static class VoiceGreeting
+    {
+        public static void Play()
+        {
+            try
+            {
+                string audioPath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Assets",
+                    "greetings.wav");
+
+                if (File.Exists(audioPath))
+                {
+                    using SoundPlayer player = new SoundPlayer(audioPath);
+                    player.PlaySync();
+                }
+                else
+                {
+                    ConsoleUI.DisplayBotMessage("Voice greeting not found (expected at Assets\\greetings.wav). Attempting speech synthesis fallback...");
+                    // Try TTS fallback (System.Speech.Synthesis) if available on this system
+                    if (!PlayTtsFallback("Welcome to the Cybersecurity Awareness Bot."))
+                    {
+                        ConsoleUI.DisplayBotMessage("No TTS engine available. Continuing without audio.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Do not crash the app for audio playback issues
+                ConsoleUI.DisplayBotMessage($"Unable to play voice greeting: {ex.Message}");
+                // Try TTS fallback if audio file playback failed
+                try
+                {
+                    PlayTtsFallback("Welcome to the Cybersecurity Awareness Bot.");
+                }
+                catch { /* swallow */ }
+            }
+        }
+
+        // Use reflection to invoke System.Speech.Synthesis if available at runtime.
+        // This avoids a compile-time dependency so the project can target net8/net9
+        // while still using the Windows-only System.Speech when present.
+        private static bool PlayTtsFallback(string text)
+        {
+            try
+            {
+                // Type name and assembly for System.Speech
+                var synthType = Type.GetType("System.Speech.Synthesis.SpeechSynthesizer, System.Speech");
+                if (synthType == null)
+                    return false;
+
+                var synth = Activator.CreateInstance(synthType);
+                if (synth == null)
+                    return false;
+
+                var speakMethod = synthType.GetMethod("Speak", new Type[] { typeof(string) });
+                if (speakMethod == null)
+                {
+                    // try SpeakAsync if Speak not present
+                    speakMethod = synthType.GetMethod("SpeakAsync", new Type[] { typeof(string) });
+                }
+
+                if (speakMethod != null)
+                {
+                    speakMethod.Invoke(synth, new object[] { text });
+                }
+
+                if (synth is IDisposable d)
+                    d.Dispose();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+}

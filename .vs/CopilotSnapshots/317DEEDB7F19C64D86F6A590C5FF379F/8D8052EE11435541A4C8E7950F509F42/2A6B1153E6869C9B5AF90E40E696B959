@@ -1,0 +1,161 @@
+﻿using System.Media;
+using System.IO;
+using System;
+using System.Text;
+
+namespace CybersecurityAwarenessBot
+{
+    public static class VoiceGreeting
+    {
+        public static void Play()
+        {
+            try
+            {
+                string audioPath = Path.Combine(
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "Assets",
+                    "greetings.wav");
+
+                // Ensure Assets folder exists in the output and create a default WAV if missing
+                string audioDir = Path.GetDirectoryName(audioPath) ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
+                if (!Directory.Exists(audioDir))
+                {
+                    Directory.CreateDirectory(audioDir);
+                }
+
+        // Programmatically generate a small PCM WAV file containing a short beep.
+        private static void CreateDefaultWav(string path)
+        {
+            const int sampleRate = 44100;
+            const short bitsPerSample = 16;
+            const short channels = 1;
+            double durationSeconds = 0.9;
+            int samples = (int)(sampleRate * durationSeconds);
+
+            double freq = 880.0; // frequency of the tone (A5)
+            double amplitude = 0.25 * short.MaxValue;
+
+            // Prepare directory
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+            using (var bw = new BinaryWriter(fs, Encoding.ASCII))
+            {
+                int byteRate = sampleRate * channels * bitsPerSample / 8;
+                short blockAlign = (short)(channels * bitsPerSample / 8);
+                int subChunk2Size = samples * channels * bitsPerSample / 8;
+                int chunkSize = 36 + subChunk2Size;
+
+                bw.Write(Encoding.ASCII.GetBytes("RIFF"));
+                bw.Write(chunkSize);
+                bw.Write(Encoding.ASCII.GetBytes("WAVE"));
+
+                // fmt subchunk
+                bw.Write(Encoding.ASCII.GetBytes("fmt "));
+                bw.Write(16); // Subchunk1Size for PCM
+                bw.Write((short)1); // AudioFormat = 1 (PCM)
+                bw.Write(channels);
+                bw.Write(sampleRate);
+                bw.Write(byteRate);
+                bw.Write(blockAlign);
+                bw.Write(bitsPerSample);
+
+                // data subchunk
+                bw.Write(Encoding.ASCII.GetBytes("data"));
+                bw.Write(subChunk2Size);
+
+                // Write samples
+                for (int i = 0; i < samples; i++)
+                {
+                    double t = (double)i / sampleRate;
+                    short sample = (short)(amplitude * Math.Sin(2.0 * Math.PI * freq * t));
+                    bw.Write(sample);
+                }
+            }
+        }
+
+                if (!File.Exists(audioPath))
+                {
+                    // Try to create a small default greeting WAV so audio works out of the box
+                    try
+                    {
+                        CreateDefaultWav(audioPath);
+                        ConsoleUI.DisplayBotMessage($"Generated default greeting at: {audioPath}");
+                    }
+                    catch (Exception genEx)
+                    {
+                        ConsoleUI.DisplayBotMessage($"Voice greeting not found (expected at Assets\\greetings.wav). Attempting speech synthesis fallback...\nFailed to create default WAV: {genEx.Message}");
+                        if (!PlayTtsFallback("Welcome to the Cybersecurity Awareness Bot."))
+                        {
+                            ConsoleUI.DisplayBotMessage("No TTS engine available. Continuing without audio.");
+                        }
+
+                        return;
+                    }
+                }
+
+                // Play the WAV (either existing or the one we just created)
+                using SoundPlayer player = new SoundPlayer(audioPath);
+                player.PlaySync();
+            }
+            catch (Exception ex)
+            {
+                // Do not crash the app for audio playback issues
+                ConsoleUI.DisplayBotMessage($"Unable to play voice greeting: {ex.Message}");
+                // Try TTS fallback if audio file playback failed
+                try
+                {
+                    PlayTtsFallback("Welcome to the Cybersecurity Awareness Bot.");
+                }
+                catch { /* swallow */ }
+            }
+        }
+
+        // Use reflection to invoke System.Speech.Synthesis if available at runtime.
+        // This avoids a compile-time dependency so the project can target net8/net9
+        // while still using the Windows-only System.Speech when present.
+        private static bool PlayTtsFallback(string text)
+        {
+            try
+            {
+                // Type name and assembly for System.Speech
+                var synthType = Type.GetType("System.Speech.Synthesis.SpeechSynthesizer, System.Speech");
+                if (synthType == null)
+                {
+                    return false;
+                }
+
+                var synth = Activator.CreateInstance(synthType);
+                if (synth == null)
+                {
+                    return false;
+                }
+
+                var speakMethod = synthType.GetMethod("Speak", new Type[] { typeof(string) });
+                if (speakMethod == null)
+                {
+                    // try SpeakAsync if Speak not present
+                    speakMethod = synthType.GetMethod("SpeakAsync", new Type[] { typeof(string) });
+                }
+
+                if (speakMethod != null)
+                {
+                    speakMethod.Invoke(synth, new object[] { text });
+                }
+
+                if (synth is IDisposable d)
+                {
+                    d.Dispose();
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+}
