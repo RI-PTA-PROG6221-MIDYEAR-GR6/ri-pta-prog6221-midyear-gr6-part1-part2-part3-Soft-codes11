@@ -1,0 +1,185 @@
+<Window x:Class="CybersecurityAwarenessBot.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:CybersecurityAwarenessBot.Models"
+        Title="Cybersecurity Awareness Bot"
+        Width="1040" Height="740" MinWidth="860" MinHeight="580"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BgBrush}"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <!-- One chat bubble. Bot bubbles sit left, user bubbles sit right. -->
+        <DataTemplate DataType="{x:Type models:ChatMessage}">
+            <Border x:Name="Bubble"
+                    Margin="0,6" Padding="14,10" MaxWidth="560"
+                    CornerRadius="14"
+                    HorizontalAlignment="Left"
+                    Background="{StaticResource BotBubbleBrush}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Sender}" FontSize="11" FontWeight="SemiBold"
+                               Foreground="{StaticResource AccentBrush}" Margin="0,0,0,3"/>
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontSize="14"
+                               LineHeight="21" Foreground="{StaticResource TextBrush}"/>
+                    <TextBlock Text="{Binding Time}" FontSize="10" HorizontalAlignment="Right"
+                               Foreground="{StaticResource MutedBrush}" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsBot}" Value="False">
+                    <Setter TargetName="Bubble" Property="HorizontalAlignment" Value="Right"/>
+                    <Setter TargetName="Bubble" Property="Background" Value="{StaticResource UserBubbleBrush}"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Margin" Value="0,16,0,6"/>
+        </Style>
+
+        <Style x:Key="TopicButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===================== SIDEBAR ===================== -->
+        <Border Grid.Column="0" Background="{StaticResource PanelBrush}" Padding="18,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Compact ASCII shield + title -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock x:Name="SidebarShield" FontFamily="Consolas" FontSize="12"
+                               Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Cybersecurity Awareness Bot" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center"
+                               Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Quick topics -->
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="Quick topics" Style="{StaticResource SectionLabel}"/>
+                    <Button Content="Password safety" Tag="Tell me about password safety" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Phishing and scams" Tag="Give me a phishing tip" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Privacy" Tag="Tell me about privacy" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Safe browsing" Tag="How do I browse safely?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Malware" Tag="Tell me about malware" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Social engineering" Tag="What is social engineering?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Account security" Tag="How do I secure my accounts?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                </StackPanel>
+
+                <!-- Memory panel -->
+                <StackPanel Grid.Row="2" VerticalAlignment="Top">
+                    <TextBlock Text="What I remember" Style="{StaticResource SectionLabel}"/>
+                    <Border Background="{StaticResource PanelLightBrush}" CornerRadius="8" Padding="12,10">
+                        <StackPanel>
+                            <TextBlock x:Name="MemoryText" TextWrapping="Wrap" FontSize="12.5" LineHeight="19"
+                                       Foreground="{StaticResource TextBrush}"
+                                       Text="Nothing yet. Tell me your interests!"/>
+                            <TextBlock x:Name="MoodText" TextWrapping="Wrap" FontSize="12.5" Margin="0,8,0,0"
+                                       Foreground="{StaticResource AccentBrush}" Text="Mood: not detected yet"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <Button Grid.Row="3" Content="Clear chat" Style="{StaticResource ModernButton}"
+                        HorizontalContentAlignment="Center" Click="ClearButton_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- ===================== CHAT AREA ===================== -->
+        <Grid Grid.Column="1" Margin="22,16,22,18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header bar -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                <Ellipse DockPanel.Dock="Left" Width="10" Height="10" Fill="{StaticResource AccentBrush}"
+                         VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock DockPanel.Dock="Left" Text="Chat with CyberBot" FontSize="18" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextBrush}"/>
+                <TextBlock x:Name="VoiceStatus" DockPanel.Dock="Right" FontSize="12" HorizontalAlignment="Right"
+                           VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}"
+                           Text="Playing voice greeting..."/>
+            </DockPanel>
+
+            <!-- Conversation -->
+            <Border Grid.Row="1" Background="{StaticResource PanelBrush}" CornerRadius="12">
+                <ScrollViewer x:Name="ChatScroll" VerticalScrollBarVisibility="Auto" Padding="18,12">
+                    <ItemsControl x:Name="ChatList"/>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Typing indicator -->
+            <TextBlock x:Name="TypingText" Grid.Row="2" Text="CyberBot is typing..." FontStyle="Italic"
+                       FontSize="12" Margin="6,8,0,0" Visibility="Hidden"
+                       Foreground="{StaticResource MutedBrush}"/>
+
+            <!-- Input -->
+            <Border Grid.Row="3" Margin="0,8,0,0" Background="{StaticResource PanelBrush}"
+                    CornerRadius="12" Padding="8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="InputBox" Grid.Column="0" MaxLength="300" FontSize="14"
+                             Background="Transparent" BorderThickness="0" CaretBrush="White"
+                             Foreground="{StaticResource TextBrush}" VerticalContentAlignment="Center"
+                             Padding="8,6" IsEnabled="False"
+                             ToolTip="Type your question and press Enter"
+                             KeyDown="InputBox_KeyDown"/>
+                    <Button x:Name="SendButton" Grid.Column="1" Content="Send" Padding="26,9" Margin="8,0,0,0"
+                            Style="{StaticResource PrimaryButton}" IsEnabled="False" Click="SendButton_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ===================== WELCOME / NAME ENTRY ===================== -->
+        <Grid x:Name="WelcomeOverlay" Grid.ColumnSpan="2" Background="#F20B1220">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="560">
+                <TextBlock x:Name="WelcomeLogo" FontFamily="Consolas" FontSize="14"
+                           Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Welcome to the Cybersecurity Awareness Bot!" FontSize="20" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center" Margin="0,22,0,4"/>
+                <TextBlock Text="I'm here to help you stay safe online. What should I call you?" FontSize="14"
+                           Foreground="{StaticResource MutedBrush}" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                <Border Background="{StaticResource PanelLightBrush}" CornerRadius="10" Padding="6" Width="340">
+                    <TextBox x:Name="NameBox" MaxLength="30" FontSize="15" Background="Transparent"
+                             BorderThickness="0" CaretBrush="White" Foreground="{StaticResource TextBrush}"
+                             Padding="8,7" KeyDown="NameBox_KeyDown"/>
+                </Border>
+
+                <TextBlock x:Name="NameError" Foreground="{StaticResource ErrorBrush}" FontSize="12.5"
+                           HorizontalAlignment="Center" Margin="0,8,0,0" Visibility="Collapsed" TextWrapping="Wrap"/>
+
+                <Button Content="Start chatting" Style="{StaticResource PrimaryButton}" Width="340"
+                        Padding="0,11" Margin="0,14,0,0" Click="StartButton_Click"/>
+
+                <TextBlock x:Name="WelcomeVoiceStatus" Foreground="{StaticResource MutedBrush}" FontSize="12"
+                           HorizontalAlignment="Center" Margin="0,16,0,0" TextWrapping="Wrap"
+                           TextAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>CybersecurityAwarenessBot</RootNamespace>
+    <AssemblyName>CybersecurityAwarenessBot</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\greetings.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\greetings.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Copies the voice greeting (Assets\greetings.wav) next to the .exe -->
+
+</Project>
