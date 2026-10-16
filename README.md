@@ -40,7 +40,7 @@ Submission checklist (Part 1)
 - [ ] README contains run instructions and CI screenshot (add CI screenshot after a successful GitHub run)
 - [ ] Unlisted YouTube video walkthrough (include link in README)
 
-<<<<<<< HEAD
+
 
 # Cybersecurity Awareness Bot (PROG6221 – POE Part 2)
 
@@ -50,17 +50,17 @@ random responses, conversation flow, memory, and sentiment detection.
 
 [![.NET Build (CI)](https://github.com/<your-username>/<your-repo>/actions/workflows/dotnet.yml/badge.svg)](https://github.com/<your-username>/<your-repo>/actions)
 
-**Video presentation:** <paste unlisted YouTube link here>
+**Video presentation:** https://youtu.be/CMbP2Pfxcs4
 
 ## How to run
 
 1. Install the [.NET 8 SDK](https://dotnet.microsoft.com/download) (Windows 10/11).
 2. Make sure your voice greeting is at `Assets/greetings.wav`.
 3. Clone the repo, then in the project folder run:
-   ```
+   
    dotnet run
-   ```
-   or open `CybersecurityAwarenessBot.csproj` in Visual Studio 2022 and press **F5**.
+   
+   or open `CybersecurityAwarenessBotUI.csproj` in Visual Studio 2022 and SET IT AS STARTUP PROJECTpress **F5**.
 
 ## Features (mapped to the Part 2 brief)
 
@@ -77,7 +77,7 @@ random responses, conversation flow, memory, and sentiment detection.
 
 ## Project structure
 
-```
+
 CybersecurityAwarenessBot/
 ├── App.xaml / App.xaml.cs        Application entry point + global error handler + styles
 ├── MainWindow.xaml / .cs         GUI only (no chatbot logic)
@@ -90,11 +90,11 @@ CybersecurityAwarenessBot/
 ├── Helpers/AsciiArt.cs           ASCII logo from Part 1
 ├── Assets/greetings.wav          Voice greeting
 └── .github/workflows/dotnet.yml  CI: restore + build on every push
-```
+
 
 ## Example conversation
 
-```
+
 You:     Hi
 CyberBot: Hello, Sam! Ready to learn something new about staying safe online?
 You:     I'm interested in privacy
@@ -105,11 +105,7 @@ You:     tell me more
 CyberBot: [deeper explanation on phishing]
 You:     give me another tip
 CyberBot: [a different phishing tip]
-```
 
-## Continuous Integration
-
-Screenshot of a successful run: *(add your green-tick screenshot here, e.g. `docs/ci-success.png`)*
 
 
 ## Releases
@@ -123,8 +119,8 @@ Screenshot of a successful run: *(add your green-tick screenshot here, e.g. `doc
 - Microsoft. 2026. *Windows Presentation Foundation documentation*. [Online]. Available at: https://learn.microsoft.com/en-us/dotnet/desktop/wpf/ [Accessed 11 October 2026].
 - Pieterse, H. 2021. The Cyber Threat Landscape in South Africa: A 10-Year Review. *The African Journal of Information and Communication*, 28(28). doi: https://doi.org/10.23962/10539/32213.
 - Republic of South Africa. 2013. *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.
-=======
+  
 ## CI: Successful Run
 ![CI success](docs/ci-success.jpeg)
 
->>>>>>> b55dddd (Docs: add CI screenshot and reference in README)
+
