@@ -8,6 +8,16 @@ namespace CybersecurityAwarenessBot
     {
         private static readonly Random _rng = new();
 
+        // Short general question -> concise answer map
+        private static readonly Dictionary<string, string> GeneralAnswers = new()
+        {
+            { "what is phishing", "Phishing is a type of scam where attackers impersonate trustworthy organisations to steal your data. Look for spelling mistakes, unexpected urgency and mismatched sender addresses." },
+            { "what is malware", "Malware is malicious software (viruses, trojans, ransomware) that can damage or take control of your device. Keep software updated and avoid unknown downloads." },
+            { "what is 2fa", "Two-factor authentication (2FA) adds a second step to verify your identity, like a code from an authenticator app or SMS. It makes accounts much harder to compromise." },
+            { "how to create a strong password", "Use a long passphrase or complex password unique to each account. Consider a password manager and enable multi-factor authentication where available." },
+            { "how to report phishing", "Report phishing to the organisation being impersonated and to your email provider. In South Africa you can also report to the relevant authorities or contact the company directly via an official channel." }
+        };
+
         private static readonly Dictionary<string[], string[]> TopicResponses = new()
         {
             { new[] { "password", "pass", "passwd" }, new[] {
@@ -75,6 +85,15 @@ namespace CybersecurityAwarenessBot
             if (input.Contains("how are you"))
             {
                 return "I'm doing great! I'm ready to help you learn more about staying safe online.";
+            }
+
+            // General question matching (explicit keys -> answers)
+            foreach (var kv in GeneralAnswers)
+            {
+                if (input.Contains(kv.Key))
+                {
+                    return kv.Value;
+                }
             }
 
             if (input.Contains("purpose") || input.Contains("what do you do"))
