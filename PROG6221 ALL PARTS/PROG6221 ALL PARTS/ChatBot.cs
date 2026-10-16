@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace CybersecurityAwarenessBot
 {
@@ -18,6 +18,8 @@ namespace CybersecurityAwarenessBot
             ConsoleUI.DisplayBotMessage($"Nice to meet you, {user.Name}. I'm your Cybersecurity Awareness Bot.");
             ConsoleUI.DisplayBotMessage("I can help you learn about safer online behaviour.");
             ConsoleUI.DisplayBotMessage("Try asking me about passwords, phishing, or safe browsing.");
+
+            var memory = new ChatMemory();
 
             while (true)
             {
@@ -43,7 +45,7 @@ namespace CybersecurityAwarenessBot
 
                 ConsoleUI.DisplayUserMessage(input);
 
-                string response = ResponseManager.GetResponse(input);
+                string response = ResponseManager.GetResponse(input, memory);
 
                 ConsoleUI.DisplayBotMessage(response, typing: true);
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -43,12 +43,33 @@ namespace CybersecurityAwarenessBot
 
         public static string GetResponse(string input)
         {
+            return GetResponse(input, null);
+        }
+
+        public static string GetResponse(string input, ChatMemory? memory)
+        {
             if (string.IsNullOrWhiteSpace(input))
             {
                 return "I didn't get that. Could you rephrase your question?";
             }
 
             input = input.ToLowerInvariant();
+
+            // If the user asks for 'another' tip or follow-up, try to continue last topic
+            if (memory != null && (input.Contains("another") || input.Contains("another tip") || input.Contains("tell me more") || input.Contains("explain more") || input.Equals("more") || input.Contains("more info") || input.Contains("more details")))
+            {
+                if (!string.IsNullOrEmpty(memory.LastTopic))
+                {
+                    // find topic by token
+                    foreach (var kvp in TopicResponses)
+                    {
+                        if (kvp.Key.Any(k => k == memory.LastTopic || memory.LastTopic.Contains(k)))
+                        {
+                            return PickResponseAvoidRepeat(kvp.Value, kvp.Key[0], memory);
+                        }
+                    }
+                }
+            }
 
             // Direct simple conversational replies
             if (input.Contains("how are you"))
@@ -66,13 +87,63 @@ namespace CybersecurityAwarenessBot
                 return "You can ask me about password safety, phishing, safe browsing, malware, suspicious links, account security, or social engineering.";
             }
 
+            // Check if the user declares interest: "i'm interested in X" or "i like X"
+            var interestPhrases = new[] { "i'm interested in", "i am interested in", "i like", "i'm into", "i am into", "interested in" };
+            foreach (var phrase in interestPhrases)
+            {
+                var idx = input.IndexOf(phrase, StringComparison.Ordinal);
+                if (idx >= 0)
+                {
+                    var remainder = input.Substring(idx + phrase.Length).Trim();
+                    if (!string.IsNullOrEmpty(remainder))
+                    {
+                        // try to map remainder to a known topic token
+                        foreach (var kvp in TopicResponses)
+                        {
+                            if (kvp.Key.Any(k => remainder.Contains(k)))
+                            {
+                                var canonical = kvp.Key[0];
+                                memory?.Data.Remove("interest");
+                                if (memory != null)
+                                {
+                                    memory.Data["interest"] = canonical;
+                                }
+                                if (memory != null)
+                                {
+                                    memory.LastTopic = canonical;
+                                    memory.Save();
+                                }
+                                return $"Great! I'll remember that you're interested in {canonical}. Ask me for tips on that topic anytime.";
+                            }
+                        }
+
+                        // If not matched, save raw remainder as interest
+                        memory?.Data.Remove("interest");
+                        if (memory != null)
+                        {
+                            memory.Data["interest"] = remainder;
+                            memory.LastTopic = remainder;
+                            memory.Save();
+                        }
+                        return $"Great! I'll remember that you're interested in {remainder}.";
+                    }
+                }
+            }
+
             // Keyword/topic matching
             foreach (var kvp in TopicResponses)
             {
                 if (kvp.Key.Any(k => input.Contains(k)))
                 {
-                    var responses = kvp.Value;
-                    return responses[_rng.Next(responses.Length)];
+                    // store last topic for follow-ups
+                    var canonical = kvp.Key[0];
+                    if (memory != null)
+                    {
+                        memory.LastTopic = canonical;
+                        memory.Save();
+                    }
+
+                    return PickResponseAvoidRepeat(kvp.Value, canonical, memory);
                 }
             }
 
@@ -89,6 +160,40 @@ namespace CybersecurityAwarenessBot
 
             // Fallback with guidance
             return "I didn't quite understand that. Could you rephrase? You can ask about passwords, phishing, safe browsing, malware, suspicious links, account security or social engineering.";
+        }
+
+        private static string PickResponseAvoidRepeat(string[] responses, string canonicalTopic, ChatMemory? memory)
+        {
+            if (responses == null || responses.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            int lastIndex = -1;
+            string key = $"lastIndex:{canonicalTopic}";
+            if (memory != null && memory.Data.TryGetValue(key, out var lastStr) && int.TryParse(lastStr, out var parsed))
+            {
+                lastIndex = parsed;
+            }
+
+            int idx = _rng.Next(responses.Length);
+            if (responses.Length > 1)
+            {
+                int attempts = 0;
+                while (idx == lastIndex && attempts < 8)
+                {
+                    idx = _rng.Next(responses.Length);
+                    attempts++;
+                }
+            }
+
+            if (memory != null)
+            {
+                memory.Data[key] = idx.ToString();
+                memory.Save();
+            }
+
+            return responses[idx];
         }
     }
 }

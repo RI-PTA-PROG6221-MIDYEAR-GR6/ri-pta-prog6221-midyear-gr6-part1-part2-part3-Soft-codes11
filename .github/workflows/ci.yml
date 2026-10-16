@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+	runs-on: windows-latest
+
+	steps:
+	  - uses: actions/checkout@v4
+	  - name: Setup .NET
+		uses: actions/setup-dotnet@v4
+		with:
+		  dotnet-version: '9.0.x'
+
+	  - name: Restore
+		run: dotnet restore "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj"
+
+	  - name: Build
+		run: dotnet build "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj" --configuration Release --no-restore

@@ -1,0 +1,11 @@
+﻿namespace CybersecurityAwarenessBot
+{
+    public class ChatMemory
+    {
+        // Stores arbitrary memory entries (e.g., interest: "privacy")
+        public System.Collections.Generic.Dictionary<string, string> Data { get; } = new();
+
+        // Last topic discussed (canonical token such as "password", "phish", etc.)
+        public string? LastTopic { get; set; }
+    }
+}
