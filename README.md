@@ -40,6 +40,7 @@ Submission checklist (Part 1)
 - [ ] README contains run instructions and CI screenshot (add CI screenshot after a successful GitHub run)
 - [ ] Unlisted YouTube video walkthrough (include link in README)
 
+<<<<<<< HEAD
 
 # Cybersecurity Awareness Bot (PROG6221 – POE Part 2)
 
@@ -122,3 +123,8 @@ Screenshot of a successful run: *(add your green-tick screenshot here, e.g. `doc
 - Microsoft. 2026. *Windows Presentation Foundation documentation*. [Online]. Available at: https://learn.microsoft.com/en-us/dotnet/desktop/wpf/ [Accessed 11 October 2026].
 - Pieterse, H. 2021. The Cyber Threat Landscape in South Africa: A 10-Year Review. *The African Journal of Information and Communication*, 28(28). doi: https://doi.org/10.23962/10539/32213.
 - Republic of South Africa. 2013. *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.
+=======
+## CI: Successful Run
+![CI success](docs/ci-success.jpeg)
+
+>>>>>>> b55dddd (Docs: add CI screenshot and reference in README)
