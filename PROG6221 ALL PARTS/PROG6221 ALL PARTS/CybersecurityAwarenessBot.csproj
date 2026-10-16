@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <!-- Target windows explicitly so Windows-only APIs (SoundPlayer / SpeechSynthesizer) are allowed -->
+    <TargetFramework>net9.0-windows</TargetFramework>
     <RootNamespace>PROG6221_ALL_PARTS</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

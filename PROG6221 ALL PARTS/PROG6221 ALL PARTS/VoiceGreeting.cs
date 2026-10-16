@@ -3,6 +3,7 @@ using System.IO;
 using System.Media;
 using System.Text;
 using System.Speech.Synthesis;
+using System.Runtime.Versioning;
 
 namespace CybersecurityAwarenessBot
 {
@@ -50,21 +51,62 @@ namespace CybersecurityAwarenessBot
                     }
                 }
 
-                using SoundPlayer player = new SoundPlayer(audioPath);
-                player.PlaySync();
+                // Only attempt platform-specific playback on Windows
+                if (OperatingSystem.IsWindows())
+                {
+                    try
+                    {
+                        PlayOnWindows(audioPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        // log and continue without crashing
+                        ConsoleUI.DisplayBotMessage($"Unable to play voice greeting (Windows playback): {ex.Message}");
+                    }
+                }
+                else
+                {
+                    // Non-windows: skip audio (TTS / SoundPlayer are Windows-only)
+                    ConsoleUI.DisplayBotMessage("Audio playback is only supported on Windows. Continuing without audio.");
+                }
             }
             catch (Exception ex)
             {
                 // Do not crash the app for audio playback issues
                 ConsoleUI.DisplayBotMessage($"Unable to play voice greeting: {ex.Message}");
 
-                // Try speech synthesis fallback
+                // Try speech synthesis fallback only on Windows
                 try
                 {
-                    using var synth = new SpeechSynthesizer();
-                    synth.Speak("Welcome to the Cybersecurity Awareness Bot.");
+                    if (OperatingSystem.IsWindows())
+                    {
+                        using var synth = new SpeechSynthesizer();
+                        synth.Speak("Welcome to the Cybersecurity Awareness Bot.");
+                    }
                 }
                 catch { /* swallow */ }
+            }
+        }
+
+        [SupportedOSPlatform("windows")]
+        private static void PlayOnWindows(string audioPath)
+        {
+            // This method uses Windows-only APIs. Marked with SupportedOSPlatform to satisfy analyzer.
+            if (string.IsNullOrEmpty(audioPath))
+            {
+                return;
+            }
+
+            if (File.Exists(audioPath))
+            {
+                using SoundPlayer player = new SoundPlayer(audioPath);
+                player.PlaySync();
+            }
+            else
+            {
+                // If no file (shouldn't happen because Play generates one), try TTS
+                using var synth = new SpeechSynthesizer();
+                synth.Speak("Welcome to the Cybersecurity Awareness Bot.");
             }
         }
 
