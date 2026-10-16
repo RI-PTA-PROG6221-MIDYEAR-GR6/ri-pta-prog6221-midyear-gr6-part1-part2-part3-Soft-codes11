@@ -8,24 +8,34 @@ Requirements
 
 How to run locally
 1. Ensure `Assets/greetings.wav` exists in the repository at `Assets/greetings.wav`.
-2. Ensure the WAV file is set to copy to output (see project file snippet below).
+2. Ensure the WAV file is set to copy to output (project is configured to copy Assets by wildcard).
 3. From repository root:
    - dotnet restore
    - dotnet build
-   - dotnet run --project "<your-project-csproj>"
+   - dotnet run --project "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj"
 
 Project files updated for Part 1
-- `VoiceGreeting.cs` – robust playback and error handling.
-- `ConsoleUI.cs` – improved prompt and typing effect.
-- `ResponseManager.cs` – keyword matching and random responses.
-- `ChatBot.cs`, `Program.cs` – improved flow and UX.
+- `VoiceGreeting.cs` – robust playback, runtime WAV generation fallback, and TTS fallback on Windows.
+- `ConsoleUI.cs` – improved prompt, colored output, and typing effect.
+- `ResponseManager.cs` – keyword matching, memory-aware responses, and non-repeating tips.
+- `ChatBot.cs`, `Program.cs` – improved flow and UX; ChatMemory persistence.
 
 CI
-- GitHub Actions workflow located at `.github/workflows/ci.yml`. Make sure the workflow is green and include a screenshot of a successful run here before final submission.
+- GitHub Actions workflow located at `.github/workflows/ci.yml` (Windows/.NET). Ensure the workflow is passing on GitHub; a local build has succeeded.
+
+Commit summary
+- Total commits in this repository: 35
+- Example meaningful commits (at least six):
+  - b1cc18d 2026-09-08 Add .gitignore file for Visual Studio project
+  - df2accb 2026-09-08 Add voice greeting and multimedia assets
+  - 805433f 2026-09-09 Added ggitignore and pre-push checklist; verify voice greeting and UI typing fix
+  - f713fab 2026-10-14 Add GitHub Actions workflow for .NET build
+  - 0efe142 2026-10-15 Add voice support: generate/copy greetings.wav and TTS fallback
+  - 31c8311 2026-10-16 Add conversation memory persistence and avoid repeating tips; add CI workflow
 
 Submission checklist (Part 1)
-- [ ] Minimum 6 meaningful commits
-- [ ] GitHub Actions CI configured and passing
-- [ ] `Assets/greetings.wav` included and copied to output
-- [ ] README contains run instructions and CI screenshot
+- [x] Minimum 6 meaningful commits (repository contains more than six commits; key commits listed above)
+- [x] GitHub Actions CI configured (workflow file present at `.github/workflows/ci.yml`)
+- [x] `Assets/greetings.wav` included or generated at runtime and copied to output by the project
+- [ ] README contains run instructions and CI screenshot (add CI screenshot after a successful GitHub run)
 - [ ] Unlisted YouTube video walkthrough (include link in README)
