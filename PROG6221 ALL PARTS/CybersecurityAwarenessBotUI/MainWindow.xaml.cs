@@ -78,6 +78,8 @@ namespace CybersecurityAwarenessBot
             _user = new User(name);
             _engine = new ChatEngine(_user);
             _engine.MemoryChanged += RefreshMemoryPanel;   // delegate-based event: sidebar updates itself
+            _engine.StateChanged += RefreshPart3Controls;
+            TaskList.ItemsSource = _engine.Tasks;
 
             WelcomeOverlay.Visibility = Visibility.Collapsed;
             RefreshMemoryPanel(_user);
@@ -120,6 +122,37 @@ namespace CybersecurityAwarenessBot
 
             _messages.Clear();
             _messages.Add(new ChatMessage(BotName, "Chat cleared. I still remember you, so ask me anything!", true));
+        }
+
+        private async void AddTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_engine == null || string.IsNullOrWhiteSpace(TaskTitleBox.Text))
+            {
+                await BotSayAsync("Please enter a task title before adding a cybersecurity task.");
+                return;
+            }
+
+            string title = TaskTitleBox.Text.Trim();
+            string description = TaskDescriptionBox.Text.Trim();
+            DateTime? reminder = TaskReminderPicker.SelectedDate;
+            CyberTask task = _engine.AddTask(title, description, reminder);
+
+            TaskTitleBox.Clear();
+            TaskDescriptionBox.Clear();
+            TaskReminderPicker.SelectedDate = null;
+            await BotSayAsync(reminder.HasValue
+                ? $"Task added: '{task.Title}'. Reminder set for {reminder.Value:dd MMM yyyy}."
+                : $"Task added: '{task.Title}'. You can set a reminder later.");
+        }
+
+        private void TaskActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_engine == null || sender is not Button { DataContext: CyberTask task, Tag: string action })
+            {
+                return;
+            }
+
+            _engine.UpdateTask(task.Id, action);
         }
 
         private async Task SendAsync(string input)
@@ -237,6 +270,11 @@ namespace CybersecurityAwarenessBot
             };
 
             MoodText.Text = $"Mood detected: {mood.Value} {emoji}";
+        }
+
+        private void RefreshPart3Controls()
+        {
+            TaskList.Items.Refresh();
         }
     }
 }

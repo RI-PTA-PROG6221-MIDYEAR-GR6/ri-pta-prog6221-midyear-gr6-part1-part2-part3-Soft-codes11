@@ -45,6 +45,10 @@ namespace CybersecurityAwarenessBot.Services
             @"\b(tips?|advice|suggestions?)\b",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        private static readonly Regex ReminderDatePattern = new(
+            @"\b(?:in\s+(?<days>\d+)\s+days?|after\s+(?<daysAfter>\d+)\s+days?)\b|\b(?<when>today|tomorrow)\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         /// <summary>Small-talk rules: pattern -> possible replies ({name} is replaced).</summary>
         private static readonly List<(Regex Pattern, string[] Replies)> SmallTalk = new()
         {
@@ -74,12 +78,18 @@ namespace CybersecurityAwarenessBot.Services
         private readonly User _user;
         private readonly SentimentAnalyzer _sentiment = new();
         private readonly List<IntentHandler> _pipeline;
+        private readonly TaskService _taskService = new();
+        private readonly ActivityLogService _activityLog = new();
+        private readonly QuizService _quizService = new();
 
         /// <summary>Shuffled "decks" so random tips don't repeat until the whole list has been used.</summary>
         private readonly Dictionary<string, Queue<int>> _decks = new();
 
         private Topic _currentTopic;
         private int _replyCount;
+        private int _quizIndex = -1;
+        private int _quizScore;
+        private bool _quizActive;
 
         /// <summary>Raised whenever the bot learns or updates something about the user.</summary>
         public event Action<User> MemoryChanged;
@@ -94,8 +104,60 @@ namespace CybersecurityAwarenessBot.Services
                 HandleMemoryStatements,
                 HandleRecall,
                 HandleSmallTalk,
+                HandlePart3Commands,
                 HandleTopicConversation
             };
+        }
+
+        public IReadOnlyList<CyberTask> Tasks => _taskService.Tasks;
+        public IReadOnlyList<ActivityEntry> ActivityEntries => _activityLog.Entries;
+        public QuizQuestion CurrentQuizQuestion => _quizIndex >= 0 && _quizIndex < _quizService.Questions.Count
+            ? _quizService.Questions[_quizIndex]
+            : null;
+        public bool QuizActive => _quizActive;
+        public int QuizScore => _quizScore;
+        public int QuizQuestionNumber => _quizIndex + 1;
+        public int QuizTotalQuestions => _quizService.Questions.Count;
+
+        public event Action StateChanged;
+
+        public CyberTask AddTask(string title, string description, DateTime? reminderDate)
+        {
+            CyberTask task = _taskService.Add(title, description, reminderDate);
+            _activityLog.Record(reminderDate.HasValue
+                ? $"Task added from GUI: '{task.Title}' with reminder on {reminderDate.Value:dd MMM yyyy}"
+                : $"Task added from GUI: '{task.Title}' without a reminder");
+            StateChanged?.Invoke();
+            return task;
+        }
+
+        public bool UpdateTask(Guid id, string action)
+        {
+            if (action.Equals("complete", StringComparison.OrdinalIgnoreCase))
+            {
+                bool completed = _taskService.Complete(id);
+                if (completed)
+                {
+                    _activityLog.Record("Task marked as completed");
+                    StateChanged?.Invoke();
+                }
+
+                return completed;
+            }
+
+            if (action.Equals("delete", StringComparison.OrdinalIgnoreCase))
+            {
+                bool deleted = _taskService.Delete(id);
+                if (deleted)
+                {
+                    _activityLog.Record("Task deleted");
+                    StateChanged?.Invoke();
+                }
+
+                return deleted;
+            }
+
+            return false;
         }
 
         /// <summary>Main entry point: turns a user message into a reply. Never throws for odd input.</summary>
@@ -205,6 +267,154 @@ namespace CybersecurityAwarenessBot.Services
             }
 
             return null;
+        }
+
+        /// <summary>Recognises Part 3 task, reminder, quiz and activity-log commands.</summary>
+        private ChatReply HandlePart3Commands(string raw, string text)
+        {
+            if (text.Contains("show activity") || text.Contains("what have you done") || text.Contains("activity log"))
+            {
+                _activityLog.Record("Activity log viewed");
+                IReadOnlyList<ActivityEntry> recent = _activityLog.Recent(8);
+                string summary = recent.Count == 0
+                    ? "I have not recorded any actions yet. Try adding a task or starting the quiz."
+                    : "Here is a summary of recent actions:\n" + string.Join("\n", recent.Select((entry, index) => $"{index + 1}. {entry.Description} ({entry.Timestamp:dd MMM HH:mm})"));
+                return new ChatReply(summary);
+            }
+
+            if (text.Contains("start quiz") || text.Contains("begin quiz") || text == "quiz" || text.Contains("cybersecurity quiz"))
+            {
+                StartQuiz();
+                return new ChatReply(GetQuizQuestionText());
+            }
+
+            if (_quizActive && TryAnswerQuiz(text, out string quizReply))
+            {
+                return new ChatReply(quizReply);
+            }
+
+            if (text.Contains("add task") || text.Contains("create task") || text.Contains("remind me to") || text.Contains("set a reminder"))
+            {
+                string title = ExtractTaskTitle(raw);
+                DateTime? reminder = ParseReminderDate(text);
+                CyberTask task = _taskService.Add(title, $"Cybersecurity action: {title}.", reminder);
+                _activityLog.Record(reminder.HasValue
+                    ? $"Task added: '{task.Title}' with reminder on {reminder.Value:dd MMM yyyy}"
+                    : $"Task added: '{task.Title}' without a reminder");
+                StateChanged?.Invoke();
+
+                string reminderText = reminder.HasValue
+                    ? $"Reminder set for {reminder.Value:dd MMM yyyy}."
+                    : "Would you like to set a reminder? Try 'remind me in 3 days'.";
+                return new ChatReply($"Task added: '{task.Title}'. {reminderText}");
+            }
+
+            if (text.Contains("show tasks") || text.Contains("my tasks") || text.Contains("list tasks"))
+            {
+                if (_taskService.Tasks.Count == 0)
+                {
+                    return new ChatReply("You do not have any tasks yet. Try 'add task to enable two-factor authentication'.");
+                }
+
+                string taskList = string.Join("\n", _taskService.Tasks.Select((task, index) =>
+                    $"{index + 1}. [{task.StatusText}] {task.Title} — {task.ReminderText}"));
+                return new ChatReply("Your cybersecurity tasks:\n" + taskList);
+            }
+
+            return null;
+        }
+
+        private void StartQuiz()
+        {
+            _quizActive = true;
+            _quizIndex = 0;
+            _quizScore = 0;
+            _activityLog.Record($"Quiz started ({_quizService.Questions.Count} questions)");
+            StateChanged?.Invoke();
+        }
+
+        private string GetQuizQuestionText()
+        {
+            QuizQuestion question = CurrentQuizQuestion;
+            string options = string.Join("\n", question.Options.Select((option, index) => $"{(char)('A' + index)}) {option}"));
+            return $"Question {_quizIndex + 1} of {_quizService.Questions.Count}: {question.Question}\n{options}";
+        }
+
+        private bool TryAnswerQuiz(string text, out string response)
+        {
+            response = string.Empty;
+            QuizQuestion question = CurrentQuizQuestion;
+            int answerIndex = text switch
+            {
+                "a" or "a)" or "option a" => 0,
+                "b" or "b)" or "option b" => 1,
+                "c" or "c)" or "option c" => 2,
+                "d" or "d)" or "option d" => 3,
+                _ when text.Contains("true") => 0,
+                _ when text.Contains("false") => 1,
+                _ => -1
+            };
+
+            if (answerIndex < 0 || answerIndex >= question.Options.Count)
+            {
+                response = "Please answer the quiz with A, B, C or D (or True/False).";
+                return true;
+            }
+
+            bool correct = answerIndex == question.CorrectIndex;
+            if (correct)
+            {
+                _quizScore++;
+            }
+
+            response = (correct ? "Correct! " : "Not quite. ") + question.Explanation;
+            _quizIndex++;
+
+            if (_quizIndex >= _quizService.Questions.Count)
+            {
+                _quizActive = false;
+                _activityLog.Record($"Quiz completed: {_quizScore}/{_quizService.Questions.Count}");
+                response += $"\n\nQuiz complete: {_quizScore}/{_quizService.Questions.Count}. " +
+                    (_quizScore >= 10 ? "Excellent work — you are a cybersecurity pro!" : "Keep learning to stay safer online!");
+            }
+            else
+            {
+                response += "\n\n" + GetQuizQuestionText();
+            }
+
+            StateChanged?.Invoke();
+            return true;
+        }
+
+        private static string ExtractTaskTitle(string raw)
+        {
+            string title = Regex.Replace(raw, @"^(please\s+)?(add|create)\s+(a\s+)?task\s*(to|for)?\s*", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
+            title = Regex.Replace(title, @"^(can you|please)\s+remind me to\s+", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
+            title = Regex.Replace(title, @"^remind me to\s+", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
+            title = Regex.Replace(title, @"\b(in\s+\d+\s+days?|tomorrow|today)\b", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
+            return string.IsNullOrWhiteSpace(title) ? "Review cybersecurity settings" : title;
+        }
+
+        private static DateTime? ParseReminderDate(string text)
+        {
+            Match match = ReminderDatePattern.Match(text);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            if (match.Groups["when"].Value.Equals("tomorrow", StringComparison.OrdinalIgnoreCase))
+            {
+                return DateTime.Today.AddDays(1);
+            }
+
+            if (match.Groups["when"].Value.Equals("today", StringComparison.OrdinalIgnoreCase))
+            {
+                return DateTime.Today;
+            }
+
+            string daysText = match.Groups["days"].Success ? match.Groups["days"].Value : match.Groups["daysAfter"].Value;
+            return int.TryParse(daysText, out int days) ? DateTime.Today.AddDays(days) : null;
         }
 
         /// <summary>

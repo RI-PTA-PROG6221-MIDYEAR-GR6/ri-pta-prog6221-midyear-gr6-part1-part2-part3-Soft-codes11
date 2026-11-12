@@ -48,7 +48,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280"/>
+            <ColumnDefinition Width="330"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -81,10 +81,13 @@
                     <Button Content="Malware" Tag="Tell me about malware" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                     <Button Content="Social engineering" Tag="What is social engineering?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                     <Button Content="Account security" Tag="How do I secure my accounts?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Start cybersecurity quiz" Tag="Start quiz" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
+                    <Button Content="Show activity log" Tag="Show activity log" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                 </StackPanel>
 
                 <!-- Memory panel -->
-                <StackPanel Grid.Row="2" VerticalAlignment="Top">
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel VerticalAlignment="Top">
                     <TextBlock Text="What I remember" Style="{StaticResource SectionLabel}"/>
                     <Border Background="{StaticResource PanelLightBrush}" CornerRadius="8" Padding="12,10">
                         <StackPanel>
@@ -95,7 +98,36 @@
                                        Foreground="{StaticResource AccentBrush}" Text="Mood: not detected yet"/>
                         </StackPanel>
                     </Border>
+                    <TextBlock Text="Task assistant" Style="{StaticResource SectionLabel}"/>
+                    <TextBox x:Name="TaskTitleBox" Margin="0,0,0,5" Padding="7" FontSize="12"
+                             Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
+                             BorderThickness="0" ToolTip="Task title"/>
+                    <TextBox x:Name="TaskDescriptionBox" Margin="0,0,0,5" Padding="7" FontSize="12"
+                             Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
+                             BorderThickness="0" ToolTip="Task description (optional)"/>
+                    <DatePicker x:Name="TaskReminderPicker" Margin="0,0,0,5" SelectedDateFormat="Short"
+                                Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
+                                ToolTip="Optional reminder date"/>
+                    <Button Content="Add task" Style="{StaticResource PrimaryButton}" Click="AddTaskButton_Click"/>
+                    <ListBox x:Name="TaskList" Margin="0,8,0,0" Background="Transparent" BorderThickness="0"
+                             Foreground="{StaticResource TextBrush}" MaxHeight="170">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:CyberTask}">
+                                <Border Background="{StaticResource PanelLightBrush}" CornerRadius="6" Padding="7" Margin="0,2">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding ReminderText}" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <Button Content="Complete" Tag="complete" Padding="5,2" Margin="0,0,4,0" Click="TaskActionButton_Click"/>
+                                            <Button Content="Delete" Tag="delete" Padding="5,2" Click="TaskActionButton_Click"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </StackPanel>
+                </ScrollViewer>
 
                 <Button Grid.Row="3" Content="Clear chat" Style="{StaticResource ModernButton}"
                         HorizontalContentAlignment="Center" Click="ClearButton_Click"/>
