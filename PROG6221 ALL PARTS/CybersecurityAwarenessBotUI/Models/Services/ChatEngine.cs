@@ -41,12 +41,24 @@ namespace CybersecurityAwarenessBot.Services
             @"\b(more|explain|elaborate|details?|what do you mean|(?:don't|do not|dont) (?:understand|get it)|confus\w*|unclear|clarify|simpler|example|why)\b",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        private static readonly Regex QuestionPattern = new(
+            @"\b(what is|what are|what does|how do i|how can i|how should i|why does|why is|why are|tell me about|explain|define|meaning of)\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         private static readonly Regex TipPattern = new(
             @"\b(tips?|advice|suggestions?)\b",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         private static readonly Regex ReminderDatePattern = new(
             @"\b(?:in\s+(?<days>\d+)\s+days?|after\s+(?<daysAfter>\d+)\s+days?)\b|\b(?<when>today|tomorrow)\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex TaskCommandPattern = new(
+            @"\b(add|create|set|schedule|make|remember|remind)\b.*\b(tasks?|reminders?|todos?|to-dos?)\b|\bremind\s+me\s+(to|about)\b|\b(reminders?|todos?|to-dos?)\s+(to|for|about)\b",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private static readonly Regex ActivityPattern = new(
+            @"\b(show|view|list|display)\b.*\b(activity|actions?|history|log|tasks?)\b|\bwhat\s+(?:have|did)\s+(?:i|you)\s+(?:done|do)\b|\bactivity\s+log\b|\brecent\s+actions?\b",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>Small-talk rules: pattern -> possible replies ({name} is replaced).</summary>
@@ -78,7 +90,7 @@ namespace CybersecurityAwarenessBot.Services
         private readonly User _user;
         private readonly SentimentAnalyzer _sentiment = new();
         private readonly List<IntentHandler> _pipeline;
-        private readonly TaskService _taskService = new();
+        private readonly TaskService _taskService;
         private readonly ActivityLogService _activityLog = new();
         private readonly QuizService _quizService = new();
 
@@ -90,6 +102,8 @@ namespace CybersecurityAwarenessBot.Services
         private int _quizIndex = -1;
         private int _quizScore;
         private bool _quizActive;
+        private bool _quizWasInterrupted;
+        private CyberTask _pendingReminderTask;
 
         /// <summary>Raised whenever the bot learns or updates something about the user.</summary>
         public event Action<User> MemoryChanged;
@@ -97,6 +111,7 @@ namespace CybersecurityAwarenessBot.Services
         public ChatEngine(User user)
         {
             _user = user;
+            _taskService = new TaskService(_user.Name);
 
             // The order matters: the first handler to return a reply wins.
             _pipeline = new List<IntentHandler>
@@ -129,6 +144,19 @@ namespace CybersecurityAwarenessBot.Services
                 : $"Task added from GUI: '{task.Title}' without a reminder");
             StateChanged?.Invoke();
             return task;
+        }
+
+        public bool ClearAllTasks(out int clearedCount)
+        {
+            clearedCount = _taskService.Tasks.Count;
+            if (!_taskService.ClearAll())
+            {
+                return false;
+            }
+
+            _activityLog.Record($"All tasks and reminders cleared ({clearedCount})");
+            StateChanged?.Invoke();
+            return true;
         }
 
         public bool UpdateTask(Guid id, string action)
@@ -272,14 +300,29 @@ namespace CybersecurityAwarenessBot.Services
         /// <summary>Recognises Part 3 task, reminder, quiz and activity-log commands.</summary>
         private ChatReply HandlePart3Commands(string raw, string text)
         {
-            if (text.Contains("show activity") || text.Contains("what have you done") || text.Contains("activity log"))
+            bool isTaskCommand = TaskCommandPattern.IsMatch(text);
+            bool isActivityCommand = ActivityPattern.IsMatch(text);
+            bool isTaskListCommand = text.Contains("show tasks") || text.Contains("my tasks") || text.Contains("list tasks") ||
+                text.Contains("show reminders") || text.Contains("my reminders") || text.Contains("list reminders");
+
+            if (ActivityPattern.IsMatch(text))
             {
+                bool quizWasInterrupted = _quizActive || _quizWasInterrupted;
+                if (_quizActive)
+                {
+                    _quizActive = false;
+                    StateChanged?.Invoke();
+                }
+
+                _quizWasInterrupted = false;
                 _activityLog.Record("Activity log viewed");
                 IReadOnlyList<ActivityEntry> recent = _activityLog.Recent(8);
                 string summary = recent.Count == 0
                     ? "I have not recorded any actions yet. Try adding a task or starting the quiz."
                     : "Here is a summary of recent actions:\n" + string.Join("\n", recent.Select((entry, index) => $"{index + 1}. {entry.Description} ({entry.Timestamp:dd MMM HH:mm})"));
-                return new ChatReply(summary);
+                return new ChatReply(quizWasInterrupted
+                    ? "I've paused the quiz so we can review your activity.\n\n" + summary
+                    : summary);
             }
 
             if (text.Contains("start quiz") || text.Contains("begin quiz") || text == "quiz" || text.Contains("cybersecurity quiz"))
@@ -288,37 +331,81 @@ namespace CybersecurityAwarenessBot.Services
                 return new ChatReply(GetQuizQuestionText());
             }
 
-            if (_quizActive && TryAnswerQuiz(text, out string quizReply))
+            // A named topic is a deliberate change of subject, not a quiz answer.
+            // End the quiz and let the same message continue through topic handling.
+            if (_quizActive && (FindTopic(text) != null || isTaskCommand || isActivityCommand || isTaskListCommand))
+            {
+                _quizActive = false;
+                _quizWasInterrupted = true;
+                StateChanged?.Invoke();
+            }
+            else if (_quizActive && TryAnswerQuiz(text, out string quizReply))
             {
                 return new ChatReply(quizReply);
             }
 
-            if (text.Contains("add task") || text.Contains("create task") || text.Contains("remind me to") || text.Contains("set a reminder"))
+            if (_pendingReminderTask != null &&
+                (text.Contains("remind") || text.Contains("reminder") || IsAffirmative(text)))
+            {
+                DateTime? followUpDate = ParseReminderDate(text);
+                if (followUpDate.HasValue)
+                {
+                    CyberTask pendingTask = _pendingReminderTask;
+                    if (!_taskService.UpdateReminder(pendingTask.Id, followUpDate.Value))
+                    {
+                        return new ChatReply($"I couldn't set the reminder for '{pendingTask.Title}' because task storage is unavailable.");
+                    }
+
+                    _activityLog.Record($"Reminder set for '{pendingTask.Title}' on {followUpDate.Value:dd MMM yyyy}");
+                    _pendingReminderTask = null;
+                    StateChanged?.Invoke();
+                    return new ChatReply($"Got it! I'll remind you {ReminderTimingText(text, followUpDate.Value)} for '{pendingTask.Title}'.");
+                }
+
+                if (IsAffirmative(text))
+                {
+                    return new ChatReply($"Sure. When should I remind you about '{_pendingReminderTask.Title}'? Try 'in 3 days' or 'tomorrow'.");
+                }
+            }
+
+            if (TaskCommandPattern.IsMatch(text))
             {
                 string title = ExtractTaskTitle(raw);
                 DateTime? reminder = ParseReminderDate(text);
-                CyberTask task = _taskService.Add(title, $"Cybersecurity action: {title}.", reminder);
+                CyberTask task = _taskService.Add(title, BuildTaskDescription(title), reminder);
                 _activityLog.Record(reminder.HasValue
-                    ? $"Task added: '{task.Title}' with reminder on {reminder.Value:dd MMM yyyy}"
-                    : $"Task added: '{task.Title}' without a reminder");
+                    ? $"Reminder set for '{task.Title}' on {reminder.Value:dd MMM yyyy}"
+                    : $"Task added: '{task.Title}' (no reminder set)");
+                _pendingReminderTask = reminder.HasValue ? null : task;
                 StateChanged?.Invoke();
 
+                bool requestedReminder = text.Contains("remind") || text.Contains("reminder") || text.Contains("schedule");
                 string reminderText = reminder.HasValue
-                    ? $"Reminder set for {reminder.Value:dd MMM yyyy}."
-                    : "Would you like to set a reminder? Try 'remind me in 3 days'.";
-                return new ChatReply($"Task added: '{task.Title}'. {reminderText}");
+                    ? $"Reminder set for '{task.Title}' on {reminder.Value:dd MMM yyyy}."
+                    : requestedReminder
+                        ? $"No reminder date was specified for '{task.Title}'. Say 'yes, remind me in 3 days' when you are ready."
+                        : $"Would you like to set a reminder for '{task.Title}'? Say 'yes, remind me in 3 days'.";
+                string quizNotice = _quizWasInterrupted
+                    ? "I've paused the quiz so we can add this task.\n\n"
+                    : string.Empty;
+                _quizWasInterrupted = false;
+                return new ChatReply(quizNotice + $"Task added: '{task.Title}'. {reminderText}");
             }
 
-            if (text.Contains("show tasks") || text.Contains("my tasks") || text.Contains("list tasks"))
+            if (isTaskListCommand)
             {
                 if (_taskService.Tasks.Count == 0)
                 {
-                    return new ChatReply("You do not have any tasks yet. Try 'add task to enable two-factor authentication'.");
+                    return new ChatReply("You do not have any tasks yet. Try 'add a task to enable 2FA'.");
                 }
 
                 string taskList = string.Join("\n", _taskService.Tasks.Select((task, index) =>
                     $"{index + 1}. [{task.StatusText}] {task.Title} — {task.ReminderText}"));
-                return new ChatReply("Your cybersecurity tasks:\n" + taskList);
+                string quizNotice = _quizWasInterrupted
+                    ? "I've paused the quiz so we can review your tasks.\n\n"
+                    : string.Empty;
+                _quizWasInterrupted = false;
+                return new ChatReply(quizNotice + "Your cybersecurity tasks:\n" + taskList);
             }
 
             return null;
@@ -388,11 +475,64 @@ namespace CybersecurityAwarenessBot.Services
 
         private static string ExtractTaskTitle(string raw)
         {
-            string title = Regex.Replace(raw, @"^(please\s+)?(add|create)\s+(a\s+)?task\s*(to|for)?\s*", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
-            title = Regex.Replace(title, @"^(can you|please)\s+remind me to\s+", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
-            title = Regex.Replace(title, @"^remind me to\s+", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
-            title = Regex.Replace(title, @"\b(in\s+\d+\s+days?|tomorrow|today)\b", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
+            string title = raw.Trim();
+            title = Regex.Replace(title, @"^(please\s+)?(?:(?:can|could|would)\s+you\s+)?(add|create|set|schedule|make)\s+(a\s+)?(new\s+)?(tasks?|reminders?|todos?|to-dos?)\s*(to|for|about)?\s*", string.Empty, RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, @"^(please\s+)?(?:(?:can|could|would)\s+you\s+)?remind me\s+(to|about)\s+", string.Empty, RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, @"^(please\s+)?remember\s+to\s+", string.Empty, RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, @"\b(in\s+\d+\s+days?|after\s+\d+\s+days?|tomorrow|today)\b", string.Empty, RegexOptions.IgnoreCase).Trim(' ', '.', '?');
+
+            title = Regex.Replace(title, @"\b2fa\b", "two-factor authentication", RegexOptions.IgnoreCase);
+            title = Regex.Replace(title, @"\bmfa\b", "multi-factor authentication", RegexOptions.IgnoreCase);
             return string.IsNullOrWhiteSpace(title) ? "Review cybersecurity settings" : title;
+        }
+
+        private static bool IsAffirmative(string text) =>
+            text == "yes" || text == "yeah" || text == "yep" || text == "sure" ||
+            text == "okay" || text == "ok" || text == "please do" || text == "do it";
+
+        private static string ReminderTimingText(string text, DateTime reminderDate)
+        {
+            Match match = ReminderDatePattern.Match(text);
+            if (match.Groups["days"].Success || match.Groups["daysAfter"].Success)
+            {
+                string days = match.Groups["days"].Success
+                    ? match.Groups["days"].Value
+                    : match.Groups["daysAfter"].Value;
+                return $"in {days} day{(days == "1" ? string.Empty : "s")}";
+            }
+
+            if (match.Groups["when"].Success)
+            {
+                return match.Groups["when"].Value.ToLowerInvariant();
+            }
+
+            return $"on {reminderDate:dd MMM yyyy}";
+        }
+
+        private static string BuildTaskDescription(string title)
+        {
+            string taskText = title.ToLowerInvariant();
+            if (taskText.Contains("privacy"))
+            {
+                return "Review account privacy settings to ensure your data is protected.";
+            }
+
+            if (taskText.Contains("password") || taskText.Contains("passphrase"))
+            {
+                return "Review your passwords and update any weak or reused credentials.";
+            }
+
+            if (taskText.Contains("two-factor") || taskText.Contains("multi-factor") || taskText.Contains("2fa") || taskText.Contains("mfa"))
+            {
+                return "Enable multi-factor authentication on important accounts for stronger protection.";
+            }
+
+            if (taskText.Contains("phish") || taskText.Contains("scam"))
+            {
+                return "Review the message carefully and verify unexpected links or requests before responding.";
+            }
+
+            return $"Cybersecurity action: {title}.";
         }
 
         private static DateTime? ParseReminderDate(string text)
@@ -427,6 +567,7 @@ namespace CybersecurityAwarenessBot.Services
             bool isFollowUp = FollowUpPattern.IsMatch(text);
             bool wantsTip = TipPattern.IsMatch(text);
             bool wantsDetail = DetailPattern.IsMatch(text) && !wantsTip;
+            bool asksQuestion = QuestionPattern.IsMatch(text);
 
             Topic topic = FindTopic(text);
 
@@ -465,6 +606,12 @@ namespace CybersecurityAwarenessBot.Services
 
             var parts = new List<string>();
 
+            if (_quizWasInterrupted)
+            {
+                parts.Add("I've paused the quiz so we can switch topics. You can say 'start quiz' whenever you want to continue with it.");
+                _quizWasInterrupted = false;
+            }
+
             if (mood.HasValue)
             {
                 parts.Add(_sentiment.GetOpener(mood.Value, _user.Name));
@@ -472,6 +619,11 @@ namespace CybersecurityAwarenessBot.Services
             else if (_currentTopic != topic && topic != KnowledgeBase.General)
             {
                 parts.Add($"Let's talk about {topic.DisplayName}.");
+            }
+
+            if (asksQuestion)
+            {
+                parts.Add(topic.Intro);
             }
 
             parts.Add(content);
@@ -499,7 +651,7 @@ namespace CybersecurityAwarenessBot.Services
         private ChatReply Fallback()
         {
             string topics = string.Join(", ", KnowledgeBase.Topics.Values.Select(t => t.DisplayName));
-            return new ChatReply($"I'm not sure I understand, {_user.Name}. Can you try rephrasing? You can ask me about {topics}.");
+            return new ChatReply($"I can help with that, {_user.Name}. You can ask about {topics}, add a task or reminder (for example, 'add a task to enable 2FA' or 'remind me to update my password tomorrow'), start a quiz, or ask 'what have you done for me?' to view recent activity.");
         }
 
         /// <summary>Returns the topic with the most keyword hits (first one wins ties), or null.</summary>

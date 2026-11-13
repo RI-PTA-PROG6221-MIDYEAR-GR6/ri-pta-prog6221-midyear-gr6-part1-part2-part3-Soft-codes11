@@ -40,20 +40,128 @@
             <Setter Property="Margin" Value="0,16,0,6"/>
         </Style>
 
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Margin" Value="0,3,0,3"/>
+        </Style>
+
+        <Style x:Key="ScrollBarRepeatButton" TargetType="RepeatButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RepeatButton">
+                        <Border Background="Transparent"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ScrollBarThumb" TargetType="Thumb">
+            <Setter Property="MinHeight" Value="28"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Background" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track"
+                                   IsDirectionReversed="{Binding IsDirectionReversed, RelativeSource={RelativeSource TemplatedParent}}">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}"
+                                                  Style="{StaticResource ScrollBarRepeatButton}"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ScrollBarThumb}"/>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}"
+                                                  Style="{StaticResource ScrollBarRepeatButton}"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Height" Value="10"/>
+                    <Setter Property="Width" Value="Auto"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="TopicButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style x:Key="ToolButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="8,7"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="ContrastToolButton" TargetType="Button" BasedOn="{StaticResource ToolButton}">
+            <Setter Property="Background" Value="{StaticResource UserBubbleBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <SolidColorBrush x:Key="QuickTopicsSectionBrush" Color="#15505A"/>
+        <SolidColorBrush x:Key="MemorySectionBrush" Color="#27365B"/>
+        <SolidColorBrush x:Key="TasksSectionBrush" Color="#493456"/>
+        <SolidColorBrush x:Key="ToolsSectionBrush" Color="#1A4B4B"/>
+
+        <Style x:Key="SidebarExpander" TargetType="Expander">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="Margin" Value="0,3,0,3"/>
+            <Setter Property="HeaderTemplate">
+                <Setter.Value>
+                    <DataTemplate>
+                        <Border Background="{Binding RelativeSource={RelativeSource AncestorType={x:Type Expander}}, Path=Background}"
+                                CornerRadius="7" Padding="10,7">
+                            <TextBlock Text="{Binding}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextBrush}"/>
+                        </Border>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="330"/>
+            <ColumnDefinition x:Name="SidebarColumn" Width="330"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <!-- ===================== SIDEBAR ===================== -->
-        <Border Grid.Column="0" Background="{StaticResource PanelBrush}" Padding="18,16">
+        <Border x:Name="SidebarPanel" Grid.Column="0" Background="{StaticResource PanelBrush}" Padding="14,14">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -72,8 +180,9 @@
                 </StackPanel>
 
                 <!-- Quick topics -->
-                <StackPanel Grid.Row="1">
-                    <TextBlock Text="Quick topics" Style="{StaticResource SectionLabel}"/>
+                <Expander Grid.Row="1" Header="Quick topics" Style="{StaticResource SidebarExpander}"
+                          Background="{StaticResource QuickTopicsSectionBrush}" IsExpanded="True">
+                    <StackPanel Margin="0,4,0,0">
                     <Button Content="Password safety" Tag="Tell me about password safety" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                     <Button Content="Phishing and scams" Tag="Give me a phishing tip" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                     <Button Content="Privacy" Tag="Tell me about privacy" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
@@ -81,36 +190,58 @@
                     <Button Content="Malware" Tag="Tell me about malware" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                     <Button Content="Social engineering" Tag="What is social engineering?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
                     <Button Content="Account security" Tag="How do I secure my accounts?" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
-                    <Button Content="Start cybersecurity quiz" Tag="Start quiz" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
-                    <Button Content="Show activity log" Tag="Show activity log" Style="{StaticResource TopicButton}" Click="TopicButton_Click"/>
-                </StackPanel>
+                    </StackPanel>
+                </Expander>
 
                 <!-- Memory panel -->
-                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                <StackPanel VerticalAlignment="Top">
-                    <TextBlock Text="What I remember" Style="{StaticResource SectionLabel}"/>
-                    <Border Background="{StaticResource PanelLightBrush}" CornerRadius="8" Padding="12,10">
-                        <StackPanel>
-                            <TextBlock x:Name="MemoryText" TextWrapping="Wrap" FontSize="12.5" LineHeight="19"
-                                       Foreground="{StaticResource TextBrush}"
-                                       Text="Nothing yet. Tell me your interests!"/>
-                            <TextBlock x:Name="MoodText" TextWrapping="Wrap" FontSize="12.5" Margin="0,8,0,0"
-                                       Foreground="{StaticResource AccentBrush}" Text="Mood: not detected yet"/>
-                        </StackPanel>
-                    </Border>
-                    <TextBlock Text="Task assistant" Style="{StaticResource SectionLabel}"/>
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel VerticalAlignment="Top" Margin="0,0,2,0">
+                    <Expander Header="What I remember" Style="{StaticResource SidebarExpander}"
+                              Background="{StaticResource MemorySectionBrush}" IsExpanded="True">
+                        <Border Background="{StaticResource PanelLightBrush}" CornerRadius="8" Padding="12,10" Margin="0,4,0,0">
+                            <StackPanel>
+                                <TextBlock x:Name="MemoryText" TextWrapping="Wrap" FontSize="12.5" LineHeight="19"
+                                           Foreground="{StaticResource TextBrush}"
+                                           Text="Nothing yet. Tell me your interests!"/>
+                                <TextBlock x:Name="MoodText" TextWrapping="Wrap" FontSize="12.5" Margin="0,8,0,0"
+                                           Foreground="{StaticResource AccentBrush}" Text="Mood: not detected yet"/>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+
+                    <Expander Header="Task assistant" Style="{StaticResource SidebarExpander}"
+                              Background="{StaticResource TasksSectionBrush}" IsExpanded="True">
+                    <StackPanel Margin="0,4,0,0">
+                    <TextBlock Text="Title (required)" Style="{StaticResource FieldLabel}"/>
                     <TextBox x:Name="TaskTitleBox" Margin="0,0,0,5" Padding="7" FontSize="12"
                              Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
-                             BorderThickness="0" ToolTip="Task title"/>
+                             BorderThickness="0" ToolTip="Enter a short name for the cybersecurity task"
+                             AutomationProperties.Name="Task title"/>
+                    <TextBlock Text="Description (optional)" Style="{StaticResource FieldLabel}"/>
                     <TextBox x:Name="TaskDescriptionBox" Margin="0,0,0,5" Padding="7" FontSize="12"
                              Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
-                             BorderThickness="0" ToolTip="Task description (optional)"/>
+                             BorderThickness="0" ToolTip="Add details about the task, if needed"
+                             AutomationProperties.Name="Task description"/>
+                    <TextBlock Text="Reminder date (optional)" Style="{StaticResource FieldLabel}"/>
                     <DatePicker x:Name="TaskReminderPicker" Margin="0,0,0,5" SelectedDateFormat="Short"
                                 Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
                                 ToolTip="Optional reminder date"/>
+                    <TextBlock Text="Reminder time (required with a date, HH:mm)" Style="{StaticResource FieldLabel}"/>
+                    <TextBox x:Name="TaskReminderTimeBox" Text="09:00" MaxLength="5" Margin="0,0,0,5" Padding="7" FontSize="12"
+                             Background="{StaticResource PanelLightBrush}" Foreground="{StaticResource TextBrush}"
+                             BorderThickness="0" ToolTip="Enter the reminder time using 24-hour format, for example 14:30"
+                             AutomationProperties.Name="Reminder time"/>
                     <Button Content="Add task" Style="{StaticResource PrimaryButton}" Click="AddTaskButton_Click"/>
-                    <ListBox x:Name="TaskList" Margin="0,8,0,0" Background="Transparent" BorderThickness="0"
-                             Foreground="{StaticResource TextBrush}" MaxHeight="170">
+                    <Button Content="Clear tasks &amp; reminders" Style="{StaticResource ModernButton}"
+                            Margin="0,4,0,0" Padding="8,6"
+                            ToolTip="Permanently remove all tasks and reminders"
+                            Click="ClearTasksButton_Click"/>
+                    <ListBox x:Name="TaskList" Margin="0,8,0,0" MaxHeight="220"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="{StaticResource TextBrush}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.CanContentScroll="True">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:CyberTask}">
                                 <Border Background="{StaticResource PanelLightBrush}" CornerRadius="6" Padding="7" Margin="0,2">
@@ -126,11 +257,32 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    </StackPanel>
+                    </Expander>
                 </StackPanel>
                 </ScrollViewer>
 
-                <Button Grid.Row="3" Content="Clear chat" Style="{StaticResource ModernButton}"
-                        HorizontalContentAlignment="Center" Click="ClearButton_Click"/>
+                <Expander Grid.Row="3" Header="Tools" Style="{StaticResource SidebarExpander}"
+                          Background="{StaticResource ToolsSectionBrush}" IsExpanded="True"
+                          Margin="0,10,0,0">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                             <Button Grid.Column="0" Content="Quiz" Tag="Start quiz"
+                                     Style="{StaticResource ContrastToolButton}" Margin="0,0,4,0"
+                                    Click="TopicButton_Click"/>
+                            <Button Grid.Column="1" Content="Activity log" Tag="Show activity log"
+                                     Style="{StaticResource ContrastToolButton}" Margin="4,0,0,0"
+                                    Click="TopicButton_Click"/>
+                        </Grid>
+                        <Button Content="Clear chat" Style="{StaticResource ContrastToolButton}"
+                                HorizontalContentAlignment="Center" Margin="0,8,0,0"
+                                Padding="8,6" Click="ClearButton_Click"/>
+                    </StackPanel>
+                </Expander>
             </Grid>
         </Border>
 
@@ -145,6 +297,11 @@
 
             <!-- Header bar -->
             <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                <Button x:Name="SidebarToggleButton" DockPanel.Dock="Left" Content="☰"
+                        Style="{StaticResource ContrastToolButton}" Width="34" Height="30"
+                        Padding="0" Margin="0,0,10,0" ToolTip="Open or close the sidebar"
+                        Panel.ZIndex="1"
+                        Click="SidebarToggleButton_Click"/>
                 <Ellipse DockPanel.Dock="Left" Width="10" Height="10" Fill="{StaticResource AccentBrush}"
                          VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <TextBlock DockPanel.Dock="Left" Text="Chat with CyberBot" FontSize="18" FontWeight="SemiBold"

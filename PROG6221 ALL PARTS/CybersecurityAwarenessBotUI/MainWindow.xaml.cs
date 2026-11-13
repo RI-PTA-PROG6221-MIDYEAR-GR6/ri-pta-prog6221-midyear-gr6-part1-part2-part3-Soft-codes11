@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,6 +26,17 @@ namespace CybersecurityAwarenessBot
         private User _user;
         private ChatEngine _engine;
         private bool _isBusy;
+        private bool _sidebarOpen = true;
+
+        private TextBox ReminderTimeBox => (TextBox)FindName("TaskReminderTimeBox");
+
+        private void SidebarToggleButton_Click(object sender, RoutedEventArgs e)
+        {
+            _sidebarOpen = !_sidebarOpen;
+            SidebarPanel.Visibility = _sidebarOpen ? Visibility.Visible : Visibility.Collapsed;
+            SidebarColumn.Width = _sidebarOpen ? new GridLength(330) : new GridLength(0);
+            SidebarToggleButton.ToolTip = _sidebarOpen ? "Close sidebar" : "Open sidebar";
+        }
 
         public MainWindow()
         {
@@ -34,6 +46,7 @@ namespace CybersecurityAwarenessBot
             WelcomeLogo.Text = AsciiArt.Logo;
             SidebarShield.Text = AsciiArt.Shield;
             WelcomeVoiceStatus.Text = "Playing voice greeting...";
+            TaskReminderPicker.DisplayDateStart = DateTime.Today;
 
             Loaded += async (_, _) =>
             {
@@ -134,15 +147,67 @@ namespace CybersecurityAwarenessBot
 
             string title = TaskTitleBox.Text.Trim();
             string description = TaskDescriptionBox.Text.Trim();
-            DateTime? reminder = TaskReminderPicker.SelectedDate;
+            DateTime? reminder = null;
+
+            if (TaskReminderPicker.SelectedDate.HasValue)
+            {
+                if (!DateTime.TryParseExact(
+                        ReminderTimeBox.Text.Trim(),
+                        "HH:mm",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out DateTime reminderTime))
+                {
+                    await BotSayAsync("Please enter a valid reminder time in 24-hour HH:mm format, for example 14:30.");
+                    return;
+                }
+
+                reminder = TaskReminderPicker.SelectedDate.Value.Date.Add(reminderTime.TimeOfDay);
+                if (reminder.Value <= DateTime.Now)
+                {
+                    await BotSayAsync("Please choose a reminder date and time in the future. Previous dates and times are not allowed.");
+                    return;
+                }
+            }
+
             CyberTask task = _engine.AddTask(title, description, reminder);
 
             TaskTitleBox.Clear();
             TaskDescriptionBox.Clear();
             TaskReminderPicker.SelectedDate = null;
+            ReminderTimeBox.Text = "09:00";
             await BotSayAsync(reminder.HasValue
-                ? $"Task added: '{task.Title}'. Reminder set for {reminder.Value:dd MMM yyyy}."
+                ? $"Task added: '{task.Title}'. Reminder set for {reminder.Value:dd MMM yyyy 'at' HH:mm}."
                 : $"Task added: '{task.Title}'. You can set a reminder later.");
+        }
+
+        private async void ClearTasksButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_engine == null || _engine.Tasks.Count == 0)
+            {
+                await BotSayAsync("There are no tasks or reminders to clear.");
+                return;
+            }
+
+            MessageBoxResult confirmation = MessageBox.Show(
+                "This will permanently remove all tasks and reminders. Do you want to continue?",
+                "Clear tasks and reminders",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            if (_engine.ClearAllTasks(out int clearedCount))
+            {
+                await BotSayAsync($"Cleared {clearedCount} task{(clearedCount == 1 ? string.Empty : "s")} and all associated reminders.");
+            }
+            else
+            {
+                await BotSayAsync("I couldn't clear the tasks because the storage service is unavailable. Nothing was removed.");
+            }
         }
 
         private void TaskActionButton_Click(object sender, RoutedEventArgs e)

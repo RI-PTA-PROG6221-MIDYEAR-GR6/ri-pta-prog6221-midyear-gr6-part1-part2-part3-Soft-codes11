@@ -1,126 +1,193 @@
-# Cybersecurity Awareness Bot (Part 1)
+# Cybersecurity Awareness Bot
 
-This repository contains Part 1 of the Cybersecurity Awareness Bot project.
+**PROG6221 – Programming 2A Portfolio of Evidence (Parts 1, 2 and 3)**
 
-Requirements
-- .NET 9 SDK
-- C# 13
+## Project Overview
 
-How to run locally
-1. Ensure `Assets/greetings.wav` exists in the repository at `Assets/greetings.wav`.
-2. Ensure the WAV file is set to copy to output (project is configured to copy Assets by wildcard).
-3. From repository root:
-   - dotnet restore
-   - dotnet build
-   - dotnet run --project "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj"
+The Cybersecurity Awareness Bot is a C# application developed to promote cybersecurity awareness and help users understand common online security threats. The project was developed in three parts, progressing from a console-based chatbot to a graphical user interface with additional interactive features.
 
-Project files updated for Part 1
-- `VoiceGreeting.cs` – robust playback, runtime WAV generation fallback, and TTS fallback on Windows.
-- `ConsoleUI.cs` – improved prompt, colored output, and typing effect.
-- `ResponseManager.cs` – keyword matching, memory-aware responses, and non-repeating tips.
-- `ChatBot.cs`, `Program.cs` – improved flow and UX; ChatMemory persistence.
+The repository contains:
 
-CI
-- GitHub Actions workflow located at `.github/workflows/ci.yml` (Windows/.NET). Ensure the workflow is passing on GitHub; a local build has succeeded.
+- **Part 1:** A .NET 9 Windows console chatbot.
+- **Parts 2 and 3:** A .NET 8 Windows Presentation Foundation (WPF) graphical chatbot.
 
-Commit summary
-- Total commits in this repository: 35
-- Example meaningful commits (at least six):
-  - b1cc18d 2026-09-08 Add .gitignore file for Visual Studio project
-  - df2accb 2026-09-08 Add voice greeting and multimedia assets
-  - 805433f 2026-09-09 Added ggitignore and pre-push checklist; verify voice greeting and UI typing fix
-  - f713fab 2026-10-14 Add GitHub Actions workflow for .NET build
-  - 0efe142 2026-10-15 Add voice support: generate/copy greetings.wav and TTS fallback
-  - 31c8311 2026-10-16 Add conversation memory persistence and avoid repeating tips; add CI workflow
+## Requirements
 
-Submission checklist (Part 1)
-- [x] Minimum 6 meaningful commits (repository contains more than six commits; key commits listed above)
-- [x] GitHub Actions CI configured (workflow file present at `.github/workflows/ci.yml`)
-- [x] `Assets/greetings.wav` included or generated at runtime and copied to output by the project
-- [ ] README contains run instructions and CI screenshot (add CI screenshot after a successful GitHub run)
-- [ ] Unlisted YouTube video walkthrough (include link in README)
+- Windows 10 or later.
+- .NET 9 SDK.
+- .NET 8 SDK.
+- Visual Studio with the .NET desktop development and WPF workload.
+- MySQL Server 8.x (optional, for Part 3 database functionality).
 
+## Running the Applications
 
+Open PowerShell in the repository's root directory.
 
-# Cybersecurity Awareness Bot (PROG6221 – POE Part 2)
+### Restore and build the solution
 
-A WPF desktop chatbot that teaches South African users how to stay safe online.
-Part 2 converts the Part 1 console app into a GUI and adds keyword recognition,
-random responses, conversation flow, memory, and sentiment detection.
+```powershell
+dotnet restore "PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln"
 
-[![.NET Build (CI)](https://github.com/<your-username>/<your-repo>/actions/workflows/dotnet.yml/badge.svg)](https://github.com/<your-username>/<your-repo>/actions)
+dotnet build "PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln" --configuration Release
+```
 
-**Video presentation:** https://youtu.be/CMbP2Pfxcs4
+### Run Part 1 – Console Application
 
-## How to run
+```powershell
+dotnet run --project "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj"
+```
 
-1. Install the [.NET 8 SDK](https://dotnet.microsoft.com/download) (Windows 10/11).
-2. Make sure your voice greeting is at `Assets/greetings.wav`.
-3. Clone the repo, then in the project folder run:
-   
-   dotnet run
-   
-   or open `CybersecurityAwarenessBotUI.csproj` in Visual Studio 2022 and SET IT AS STARTUP PROJECTpress **F5**.
+### Run Parts 2 and 3 – WPF Application
 
-## Features (mapped to the Part 2 brief)
+```powershell
+dotnet run --project "PROG6221 ALL PARTS/CybersecurityAwarenessBotUI/CybersecurityAwarenessBotUI.csproj"
+```
 
-| Requirement | Where / how |
-|---|---|
-| GUI with all Part 1 features | `MainWindow.xaml` – voice greeting on launch, ASCII logo on the welcome screen and a compact shield in the sidebar, name entry, coloured chat bubbles, typing effect |
-| Keyword recognition | `Data/KnowledgeBase.cs` + `Models/Topic.cs` – 8 topics (passwords, phishing/scams, privacy, safe browsing, malware, social engineering, account security, software updates); regex word-start matching with scoring |
-| Random responses | Every topic has 4–5 tips dealt from a shuffled deck (`ChatEngine.NextFromDeck`), so tips don't repeat until all have been used |
-| Conversation flow | Follow-ups like *"give me another tip"*, *"tell me more"*, *"explain more"*, *"I don't understand"* continue the current topic |
-| Memory and recall | `Models/User.cs` stores name, favourite topic, last mood and topics explored. Shown in the sidebar and used to personalise replies. Try *"I'm interested in privacy"* then *"what do you remember about me?"* |
-| Sentiment detection | `Services/SentimentAnalyzer.cs` – worried, frustrated, overwhelmed, confused, curious, positive. The bot opens with empathy **and immediately shares a tip** |
-| Error handling | Empty input, unknown input, invalid names, audio failures and unexpected exceptions are all handled without crashing |
-| Code optimisation | Dictionaries (topics, sentiments), lists, `Queue<int>` decks, **delegates** (`IntentHandler` pipeline, `Action<User>` event), separate classes by responsibility |
+The WPF application can also be opened through the solution file:
 
-## Project structure
+`PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln`
 
+## Part 1 – Console Chatbot Features
 
-CybersecurityAwarenessBot/
-├── App.xaml / App.xaml.cs        Application entry point + global error handler + styles
-├── MainWindow.xaml / .cs         GUI only (no chatbot logic)
-├── Models/                       User (memory), Topic, Sentiment, ChatReply, ChatMessage
-├── Services/
-│   ├── ChatEngine.cs             Delegate pipeline: memory → recall → small talk → topics/sentiment
-│   ├── SentimentAnalyzer.cs      Mood detection + empathetic openers
-│   └── VoiceGreeting.cs          Plays Assets/greetings.wav on a background thread
-├── Data/KnowledgeBase.cs         All topics, tips, details, sentiment keywords
-├── Helpers/AsciiArt.cs           ASCII logo from Part 1
-├── Assets/greetings.wav          Voice greeting
-└── .github/workflows/dotnet.yml  CI: restore + build on every push
+- Cybersecurity-themed ASCII logo.
+- Personalised greeting using the user's name.
+- Recorded WAV voice greeting with Windows audio playback and fallback handling.
+- Responses covering passwords, phishing, privacy and safe browsing.
+- Input validation for empty and unrecognised messages.
+- Coloured console interface, borders and typing effect.
+- Separate classes for chatbot logic, console interface, responses, memory and voice greeting.
 
+The console voice greeting is stored in:
 
-## Example conversation
+`PROG6221 ALL PARTS/PROG6221 ALL PARTS/Assets/greetings.wav`
 
+## Part 2 – Graphical User Interface Features
 
-You:     Hi
-CyberBot: Hello, Sam! Ready to learn something new about staying safe online?
-You:     I'm interested in privacy
-CyberBot: Great! I'll remember that you're interested in privacy. ...
-You:     I'm worried about online scams
-CyberBot: It's completely understandable to feel that way, Sam. ... [phishing tip]
-You:     tell me more
-CyberBot: [deeper explanation on phishing]
-You:     give me another tip
-CyberBot: [a different phishing tip]
+- WPF graphical user interface.
+- Personalised interaction and voice greeting.
+- Cybersecurity keyword recognition.
+- Randomised topic responses.
+- Follow-up conversation flow.
+- Conversation memory and recall.
+- Sentiment detection for worried, frustrated, confused, overwhelmed, curious and positive messages.
+- Use of delegates, dictionaries, lists and queues.
+- Handling of invalid and unrecognised input.
 
+## Part 3 – Advanced Features
 
+### Task Assistant and Reminders
 
-## Releases
+- Add tasks with a title and description.
+- Set optional reminder dates.
+- View saved tasks.
+- Mark tasks as complete.
+- Delete tasks.
 
-- **v1.0.0** – Part 1 console chatbot
-- **v1.1.0** – WPF GUI conversion
-- **v2.0.0** – Part 2 complete (keywords, random replies, memory, sentiment)
+### Database Integration
 
-## References
+- MySQL task storage.
+- Automatic creation of the task table when configured.
+- Task creation, retrieval, updating and deletion.
+- JSON storage fallback when MySQL is not configured or unavailable.
 
-- Microsoft. 2026. *Windows Presentation Foundation documentation*. [Online]. Available at: https://learn.microsoft.com/en-us/dotnet/desktop/wpf/ [Accessed 11 October 2026].
-- Pieterse, H. 2021. The Cyber Threat Landscape in South Africa: A 10-Year Review. *The African Journal of Information and Communication*, 28(28). doi: https://doi.org/10.23962/10539/32213.
-- Republic of South Africa. 2013. *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.
-  
-## CI: Successful Run
-![CI success](docs/ci-success.jpeg)
+### Cybersecurity Quiz
 
+- Twelve cybersecurity questions.
+- Multiple-choice and true/false questions.
+- One question displayed at a time.
+- Immediate feedback after answering.
+- Explanations for answers.
+- Score tracking and final feedback.
 
+### Natural Language Processing Simulation
+
+- Keyword detection and string manipulation.
+- Recognition of different ways of expressing supported commands.
+- Task and reminder commands.
+- Quiz-related commands.
+- Activity-log requests.
+
+### Activity Log
+
+- Records supported user actions.
+- Includes task-related activities, reminders, quiz activities and chatbot commands.
+- Displays recent activity entries.
+- Supports requests such as "Show activity log" and "What have you done for me?"
+
+## MySQL Database Configuration
+
+The application uses a Windows environment variable for the MySQL connection string. Do not commit real database passwords or credentials to GitHub.
+
+Set the connection string in PowerShell before running the WPF application:
+
+```powershell
+$env:CYBERBOT_MYSQL_CONNECTION_STRING = "Server=localhost;Port=3306;Database=cybersecurity_bot;User ID=cyberbot;Password=YOUR_PASSWORD;"
+
+dotnet run --project "PROG6221 ALL PARTS/CybersecurityAwarenessBotUI/CybersecurityAwarenessBotUI.csproj"
+```
+
+Replace `YOUR_PASSWORD` with your own local MySQL password. Keep the real connection string private.
+
+When MySQL is not configured or cannot be reached, the application uses its JSON fallback storage:
+
+`Data/cyber-tasks.json`
+
+## Project Structure
+
+```text
+PROG6221 ALL PARTS/
+│
+├── CybersecurityAwarenessBot.sln
+│
+├── PROG6221 ALL PARTS/
+│   ├── Assets/
+│   │   └── greetings.wav
+│   ├── Program.cs
+│   ├── Chatbot.cs
+│   ├── ConsoleUI.cs
+│   └── VoiceGreeting.cs
+│
+└── CybersecurityAwarenessBotUI/
+    ├── MainWindow.xaml
+    ├── MainWindow.xaml.cs
+    ├── Models/
+    ├── Services/
+    ├── Data/
+    └── Assets/
+        └── greetings.wav
+
+.github/
+└── workflows/
+```
+
+## Continuous Integration
+
+GitHub Actions workflow files are located in `.github/workflows/`.
+
+The workflows are configured to restore and build the solution on Windows when the relevant push and pull-request events occur.
+
+## Video Presentation
+
+The video presentation demonstrates the application, its features, code structure, logic and implementation.
+
+- **Part 1 presentation:** [Insert unlisted video link]
+- **Part 2 presentation:** [Insert unlisted video link]
+- **Final Part 3 POE presentation:** [Insert unlisted video link]
+
+## Releases and Version History
+
+The project is developed in stages:
+
+- Part 1 – Console chatbot.
+- Part 2 – WPF graphical chatbot.
+- Part 3 – Final enhanced chatbot with task management, database integration, quiz functionality, natural-language-style commands and activity logging.
+
+GitHub commits and releases provide the project's development history.
+
+## Academic References
+
+Microsoft. (2026). *Windows Presentation Foundation documentation*. Available at: https://learn.microsoft.com/en-us/dotnet/desktop/wpf/ (Accessed: 2026).
+
+Pieterse, H. (2021). The Cyber Threat Landscape in South Africa: A 10-Year Review. *The African Journal of Information and Communication*, 28(28). https://doi.org/10.23962/10539/32213.
+
+Republic of South Africa. (2013). *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.
