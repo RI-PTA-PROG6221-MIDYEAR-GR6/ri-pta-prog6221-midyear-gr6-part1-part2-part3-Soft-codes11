@@ -17,7 +17,11 @@ The repository contains:
 - .NET 9 SDK.
 - .NET 8 SDK.
 - Visual Studio with the .NET desktop development and WPF workload.
-- MySQL Server 8.x (optional, for Part 3 database functionality).
+- MySQL Server 8.x (optional; only required when database-backed task storage is desired).
+
+The WPF application does not require MySQL to start. If the MySQL connection is not
+configured or cannot be opened, task data and activity data are stored as JSON files
+under the application's `Data` directory.
 
 ## Running the Applications
 
@@ -37,15 +41,30 @@ dotnet build "PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln" --configuration 
 dotnet run --project "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj"
 ```
 
+The console application plays `Assets/greetings.wav` when the file is available and
+continues with a text-only greeting if audio playback is unavailable.
+
 ### Run Parts 2 and 3 – WPF Application
 
 ```powershell
 dotnet run --project "PROG6221 ALL PARTS/CybersecurityAwarenessBotUI/CybersecurityAwarenessBotUI.csproj"
 ```
 
+The WPF application starts with a name-entry screen. Enter a name and select
+**Start chatting** (or press Enter) before using the chat, sidebar, task assistant,
+quiz, or activity-log features. The sidebar can be opened or closed with the
+hamburger button in the chat header.
+
 The WPF application can also be opened through the solution file:
 
 `PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln`
+
+When using Visual Studio, right-click `CybersecurityAwarenessBotUI` in Solution
+Explorer and select **Set as Startup Project** before pressing **F5**. The solution
+also contains the separate Part 1 console project, so Visual Studio may otherwise
+launch the console project when no local startup-project preference exists. The
+command-line `dotnet run --project` command above always launches the WPF project
+explicitly.
 
 ## Part 1 – Console Chatbot Features
 
@@ -85,10 +104,16 @@ The console voice greeting is stored in:
 
 ### Database Integration
 
-- MySQL task storage.
-- Automatic creation of the task table when configured.
+- MySQL task storage when `CYBERBOT_MYSQL_CONNECTION_STRING` is configured.
+- Automatic creation of the `cyber_tasks` table when the configured database is reachable.
 - Task creation, retrieval, updating and deletion.
 - JSON storage fallback when MySQL is not configured or unavailable.
+
+The application does not create the MySQL server, database, or user. Those must exist
+before using database storage. The connection string must identify an existing
+database, for example:
+
+`Server=localhost;Port=3306;Database=cybersecurity_bot;User ID=cyberbot;Password=YOUR_PASSWORD;`
 
 ### Cybersecurity Quiz
 
@@ -118,7 +143,7 @@ The console voice greeting is stored in:
 
 The application uses a Windows environment variable for the MySQL connection string. Do not commit real database passwords or credentials to GitHub.
 
-Set the connection string in PowerShell before running the WPF application:
+Set the connection string in the same PowerShell session used to launch the WPF application:
 
 ```powershell
 $env:CYBERBOT_MYSQL_CONNECTION_STRING = "Server=localhost;Port=3306;Database=cybersecurity_bot;User ID=cyberbot;Password=YOUR_PASSWORD;"
@@ -128,9 +153,9 @@ dotnet run --project "PROG6221 ALL PARTS/CybersecurityAwarenessBotUI/Cybersecuri
 
 Replace `YOUR_PASSWORD` with your own local MySQL password. Keep the real connection string private.
 
-When MySQL is not configured or cannot be reached, the application uses its JSON fallback storage:
+When MySQL is not configured or cannot be reached, the application uses JSON fallback storage:
 
-`Data/cyber-tasks.json`
+`Data/cyber-tasks.json` for tasks and reminders, and `Data/activity-log.json` for activity history.
 
 ## Project Structure
 
@@ -142,16 +167,17 @@ PROG6221 ALL PARTS/
 ├── PROG6221 ALL PARTS/
 │   ├── Assets/
 │   │   └── greetings.wav
-│   ├── Program.cs
-│   ├── Chatbot.cs
+    │   ├── Program.cs
+    │   ├── ChatBot.cs
 │   ├── ConsoleUI.cs
 │   └── VoiceGreeting.cs
 │
 └── CybersecurityAwarenessBotUI/
     ├── MainWindow.xaml
     ├── MainWindow.xaml.cs
+    ├── Helpers/
     ├── Models/
-    ├── Services/
+    │   └── Services/
     ├── Data/
     └── Assets/
         └── greetings.wav
@@ -190,4 +216,4 @@ Microsoft. (2026). *Windows Presentation Foundation documentation*. Available at
 
 Pieterse, H. (2021). The Cyber Threat Landscape in South Africa: A 10-Year Review. *The African Journal of Information and Communication*, 28(28). https://doi.org/10.23962/10539/32213.
 
-Republic of South Africa. (2013). *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.
+Republic of South Africa. (2013). *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.ALTER TABLE cyber_tasks ADD COLUMN IF NOT EXISTS owner_name ...

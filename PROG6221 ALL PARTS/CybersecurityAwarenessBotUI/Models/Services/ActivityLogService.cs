@@ -7,6 +7,7 @@ namespace CybersecurityAwarenessBot.Services
 {
     public class ActivityLogService
     {
+        // Activity history is persisted locally and capped at the most recent 100 entries.
         private const int MaximumEntries = 100;
         private readonly string _filePath = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory, "Data", "activity-log.json");
@@ -20,6 +21,7 @@ namespace CybersecurityAwarenessBot.Services
 
         public void Record(string description)
         {
+            // Task actions, quiz actions and chatbot commands are recorded here.
             Entries.Add(new ActivityEntry { Description = description });
             while (Entries.Count > MaximumEntries)
             {

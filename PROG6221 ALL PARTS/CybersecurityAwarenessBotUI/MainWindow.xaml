@@ -154,13 +154,17 @@
         </Style>
     </Window.Resources>
 
+    <!-- Main Part 3 layout: the sidebar contains task and productivity tools,
+         while the second column contains the chatbot conversation. -->
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="SidebarColumn" Width="330"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- ===================== SIDEBAR ===================== -->
+        <!-- ===================== SIDEBAR =====================
+             Demonstrate this area in the video: quick topics, memory,
+             task/reminder management, quiz, activity log and clear-chat tools. -->
         <Border x:Name="SidebarPanel" Grid.Column="0" Background="{StaticResource PanelBrush}" Padding="14,14">
             <Grid>
                 <Grid.RowDefinitions>
@@ -179,7 +183,7 @@
                                Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
                 </StackPanel>
 
-                <!-- Quick topics -->
+                <!-- Quick-topic buttons send predefined cybersecurity questions to ChatEngine. -->
                 <Expander Grid.Row="1" Header="Quick topics" Style="{StaticResource SidebarExpander}"
                           Background="{StaticResource QuickTopicsSectionBrush}" IsExpanded="True">
                     <StackPanel Margin="0,4,0,0">
@@ -193,7 +197,7 @@
                     </StackPanel>
                 </Expander>
 
-                <!-- Memory panel -->
+                <!-- Memory and mood panel: updated when the chatbot learns about the user. -->
                 <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel VerticalAlignment="Top" Margin="0,0,2,0">
                     <Expander Header="What I remember" Style="{StaticResource SidebarExpander}"
@@ -209,6 +213,7 @@
                         </Border>
                     </Expander>
 
+                    <!-- Part 3 task assistant: create, view, complete and delete tasks. -->
                     <Expander Header="Task assistant" Style="{StaticResource SidebarExpander}"
                               Background="{StaticResource TasksSectionBrush}" IsExpanded="True">
                     <StackPanel Margin="0,4,0,0">
@@ -262,6 +267,7 @@
                 </StackPanel>
                 </ScrollViewer>
 
+                <!-- Part 3 tools: start the quiz, view the activity log and clear chat. -->
                 <Expander Grid.Row="3" Header="Tools" Style="{StaticResource SidebarExpander}"
                           Background="{StaticResource ToolsSectionBrush}" IsExpanded="True"
                           Margin="0,10,0,0">
@@ -295,7 +301,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header bar -->
+            <!-- Chat header: the hamburger button demonstrates the sidebar toggle. -->
             <DockPanel Grid.Row="0" Margin="0,0,0,10">
                 <Button x:Name="SidebarToggleButton" DockPanel.Dock="Left" Content="☰"
                         Style="{StaticResource ContrastToolButton}" Width="34" Height="30"

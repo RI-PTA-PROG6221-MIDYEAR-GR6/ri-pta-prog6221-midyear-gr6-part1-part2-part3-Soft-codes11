@@ -297,7 +297,10 @@ namespace CybersecurityAwarenessBot.Services
             return null;
         }
 
-        /// <summary>Recognises Part 3 task, reminder, quiz and activity-log commands.</summary>
+        /// <summary>
+        /// Part 3 command router. Demonstrate this method when explaining how
+        /// natural-language task, reminder, quiz and activity-log commands work.
+        /// </summary>
         private ChatReply HandlePart3Commands(string raw, string text)
         {
             bool isTaskCommand = TaskCommandPattern.IsMatch(text);
@@ -413,6 +416,7 @@ namespace CybersecurityAwarenessBot.Services
 
         private void StartQuiz()
         {
+            // Quiz state is kept in memory while the user answers the twelve questions.
             _quizActive = true;
             _quizIndex = 0;
             _quizScore = 0;

@@ -4,6 +4,8 @@ namespace CybersecurityAwarenessBot.Services
 {
     public class QuizService
     {
+        // The Part 3 quiz contains twelve cybersecurity questions with answers
+        // and explanations, including multiple-choice and true/false questions.
         public IReadOnlyList<QuizQuestion> Questions { get; } = new List<QuizQuestion>
         {
             new() { Question = "What should you do with an unexpected email asking for your password?", Options = new[] { "Reply with it", "Report it as phishing", "Forward it to friends", "Click its link" }, CorrectIndex = 1, Explanation = "Legitimate organisations do not ask for your password by email. Report the message as phishing." },

@@ -32,6 +32,7 @@ namespace CybersecurityAwarenessBot
 
         private void SidebarToggleButton_Click(object sender, RoutedEventArgs e)
         {
+            // Collapse or restore the sidebar column without removing any sidebar controls.
             _sidebarOpen = !_sidebarOpen;
             SidebarPanel.Visibility = _sidebarOpen ? Visibility.Visible : Visibility.Collapsed;
             SidebarColumn.Width = _sidebarOpen ? new GridLength(330) : new GridLength(0);
@@ -76,6 +77,7 @@ namespace CybersecurityAwarenessBot
 
         private async void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            // Part 3 demonstrations begin after the user name is validated and the chat starts.
             string name = NameBox.Text.Trim();
 
             if (!ValidName.IsMatch(name))
@@ -139,6 +141,7 @@ namespace CybersecurityAwarenessBot
 
         private async void AddTaskButton_Click(object sender, RoutedEventArgs e)
         {
+            // GUI task flow: validate the title, optionally parse a reminder, then persist the task.
             if (_engine == null || string.IsNullOrWhiteSpace(TaskTitleBox.Text))
             {
                 await BotSayAsync("Please enter a task title before adding a cybersecurity task.");

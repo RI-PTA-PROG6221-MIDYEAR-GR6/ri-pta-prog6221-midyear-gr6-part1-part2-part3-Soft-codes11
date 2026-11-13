@@ -8,6 +8,7 @@ namespace CybersecurityAwarenessBot.Services
 {
     public class TaskService
     {
+        // MySQL is the primary store when configured; JSON is the safe fallback.
         private const string CreateTableSql = """
             CREATE TABLE IF NOT EXISTS cyber_tasks (
                 id CHAR(36) NOT NULL PRIMARY KEY,
@@ -140,6 +141,8 @@ namespace CybersecurityAwarenessBot.Services
 
         private void Load()
         {
+            // Startup chooses MySQL only when a connection string is configured
+            // and the required schema can be used successfully.
             if (TaskDatabaseSettings.IsConfigured && TryLoadFromDatabase())
             {
                 _databaseAvailable = true;
@@ -151,6 +154,8 @@ namespace CybersecurityAwarenessBot.Services
 
         private bool TryLoadFromDatabase()
         {
+            // This method is useful to show in the video: it creates a fresh table,
+            // checks schema compatibility, and loads tasks for the current user.
             try
             {
                 using var connection = new MySqlConnection(_connectionString);
@@ -160,11 +165,24 @@ namespace CybersecurityAwarenessBot.Services
                     createCommand.ExecuteNonQuery();
                 }
 
-                using (var migrationCommand = new MySqlCommand(
-                    "ALTER TABLE cyber_tasks ADD COLUMN IF NOT EXISTS owner_name VARCHAR(100) NOT NULL DEFAULT ''",
+                using (var columnCheckCommand = new MySqlCommand(
+                    """
+                    SELECT COUNT(*)
+                    FROM information_schema.COLUMNS
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME = 'cyber_tasks'
+                      AND COLUMN_NAME = 'owner_name'
+                    """,
                     connection))
                 {
-                    migrationCommand.ExecuteNonQuery();
+                    bool ownerColumnExists = Convert.ToInt32(columnCheckCommand.ExecuteScalar()) > 0;
+                    if (!ownerColumnExists)
+                    {
+                        // The application user should not need ALTER permission. A newly
+                        // created table already includes this column; an older incompatible
+                        // schema uses the JSON fallback instead of failing at startup.
+                        return false;
+                    }
                 }
 
                 using var command = new MySqlCommand(
