@@ -17,6 +17,7 @@ The repository contains:
 - .NET 9 SDK.
 - .NET 8 SDK.
 - Visual Studio with the .NET desktop development and WPF workload.
+<<<<<<< HEAD
 - MySQL Server 8.x (optional; only required when database-backed task storage is desired).
 
 The WPF application does not require MySQL to start. If the MySQL connection is not
@@ -124,6 +125,90 @@ database, for example:
 - Explanations for answers.
 - Score tracking and final feedback.
 
+=======
+- MySQL Server 8.x (optional, for Part 3 database functionality).
+
+## Running the Applications
+
+Open PowerShell in the repository's root directory.
+
+### Restore and build the solution
+
+```powershell
+dotnet restore "PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln"
+
+dotnet build "PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln" --configuration Release
+```
+
+### Run Part 1 – Console Application
+
+```powershell
+dotnet run --project "PROG6221 ALL PARTS/PROG6221 ALL PARTS/CybersecurityAwarenessBot.csproj"
+```
+
+### Run Parts 2 and 3 – WPF Application
+
+```powershell
+dotnet run --project "PROG6221 ALL PARTS/CybersecurityAwarenessBotUI/CybersecurityAwarenessBotUI.csproj"
+```
+
+The WPF application can also be opened through the solution file:
+
+`PROG6221 ALL PARTS/CybersecurityAwarenessBot.sln`
+
+## Part 1 – Console Chatbot Features
+
+- Cybersecurity-themed ASCII logo.
+- Personalised greeting using the user's name.
+- Recorded WAV voice greeting with Windows audio playback and fallback handling.
+- Responses covering passwords, phishing, privacy and safe browsing.
+- Input validation for empty and unrecognised messages.
+- Coloured console interface, borders and typing effect.
+- Separate classes for chatbot logic, console interface, responses, memory and voice greeting.
+
+The console voice greeting is stored in:
+
+`PROG6221 ALL PARTS/PROG6221 ALL PARTS/Assets/greetings.wav`
+
+## Part 2 – Graphical User Interface Features
+
+- WPF graphical user interface.
+- Personalised interaction and voice greeting.
+- Cybersecurity keyword recognition.
+- Randomised topic responses.
+- Follow-up conversation flow.
+- Conversation memory and recall.
+- Sentiment detection for worried, frustrated, confused, overwhelmed, curious and positive messages.
+- Use of delegates, dictionaries, lists and queues.
+- Handling of invalid and unrecognised input.
+
+## Part 3 – Advanced Features
+
+### Task Assistant and Reminders
+
+- Add tasks with a title and description.
+- Set optional reminder dates.
+- View saved tasks.
+- Mark tasks as complete.
+- Delete tasks.
+
+### Database Integration
+
+- MySQL task storage.
+- Automatic creation of the task table when configured.
+- Task creation, retrieval, updating and deletion.
+- JSON storage fallback when MySQL is not configured or unavailable.
+
+### Cybersecurity Quiz
+
+- Twelve cybersecurity questions.
+- Multiple-choice and true/false questions.
+- One question displayed at a time.
+- Immediate feedback after answering.
+- Explanations for answers.
+- Score tracking and final feedback.
+
+>>>>>>> origin/main
 ### Natural Language Processing Simulation
 
 - Keyword detection and string manipulation.
@@ -143,7 +228,11 @@ database, for example:
 
 The application uses a Windows environment variable for the MySQL connection string. Do not commit real database passwords or credentials to GitHub.
 
+<<<<<<< HEAD
 Set the connection string in the same PowerShell session used to launch the WPF application:
+=======
+Set the connection string in PowerShell before running the WPF application:
+>>>>>>> origin/main
 
 ```powershell
 $env:CYBERBOT_MYSQL_CONNECTION_STRING = "Server=localhost;Port=3306;Database=cybersecurity_bot;User ID=cyberbot;Password=YOUR_PASSWORD;"
@@ -153,9 +242,15 @@ dotnet run --project "PROG6221 ALL PARTS/CybersecurityAwarenessBotUI/Cybersecuri
 
 Replace `YOUR_PASSWORD` with your own local MySQL password. Keep the real connection string private.
 
+<<<<<<< HEAD
 When MySQL is not configured or cannot be reached, the application uses JSON fallback storage:
 
 `Data/cyber-tasks.json` for tasks and reminders, and `Data/activity-log.json` for activity history.
+=======
+When MySQL is not configured or cannot be reached, the application uses its JSON fallback storage:
+
+`Data/cyber-tasks.json`
+>>>>>>> origin/main
 
 ## Project Structure
 
@@ -167,17 +262,27 @@ PROG6221 ALL PARTS/
 ├── PROG6221 ALL PARTS/
 │   ├── Assets/
 │   │   └── greetings.wav
+<<<<<<< HEAD
     │   ├── Program.cs
     │   ├── ChatBot.cs
+=======
+│   ├── Program.cs
+│   ├── Chatbot.cs
+>>>>>>> origin/main
 │   ├── ConsoleUI.cs
 │   └── VoiceGreeting.cs
 │
 └── CybersecurityAwarenessBotUI/
     ├── MainWindow.xaml
     ├── MainWindow.xaml.cs
+<<<<<<< HEAD
     ├── Helpers/
     ├── Models/
     │   └── Services/
+=======
+    ├── Models/
+    ├── Services/
+>>>>>>> origin/main
     ├── Data/
     └── Assets/
         └── greetings.wav
@@ -216,4 +321,8 @@ Microsoft. (2026). *Windows Presentation Foundation documentation*. Available at
 
 Pieterse, H. (2021). The Cyber Threat Landscape in South Africa: A 10-Year Review. *The African Journal of Information and Communication*, 28(28). https://doi.org/10.23962/10539/32213.
 
+<<<<<<< HEAD
 Republic of South Africa. (2013). *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.ALTER TABLE cyber_tasks ADD COLUMN IF NOT EXISTS owner_name ...
+=======
+Republic of South Africa. (2013). *Protection of Personal Information Act 4 of 2013*. Pretoria: Government Printer.
+>>>>>>> origin/main
