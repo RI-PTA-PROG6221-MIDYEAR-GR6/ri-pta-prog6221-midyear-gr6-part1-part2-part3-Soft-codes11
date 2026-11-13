@@ -19,7 +19,7 @@
   <ItemGroup>
     <PackageReference Include="System.Windows.Extensions" Version="10.0.11" />
     <!-- Enable System.Speech APIs on Windows at build time for speech synthesis fallback -->
-    <PackageReference Include="System.Speech" Version="4.7.0" />
+    <PackageReference Include="System.Speech" Version="5.0.0" />
   </ItemGroup>
 
   <!-- Keep folder placeholders if required by your repo structure -->
