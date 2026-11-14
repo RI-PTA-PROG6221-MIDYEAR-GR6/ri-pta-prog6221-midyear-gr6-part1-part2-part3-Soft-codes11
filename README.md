@@ -301,9 +301,9 @@ The workflows are configured to restore and build the solution on Windows when t
 
 The video presentation demonstrates the application, its features, code structure, logic and implementation.
 
-- **Part 1 presentation:** [Insert unlisted video link]
-- **Part 2 presentation:** [Insert unlisted video link]
-- **Final Part 3 POE presentation:** [Insert unlisted video link]
+- **Part 1 presentation:** [https://youtu.be/WvpvmkV1d_o]
+- **Part 2 presentation:** [https://youtu.be/CMbP2Pfxcs4]
+- **Final Part 3 POE presentation:** [https://youtu.be/ZSg_2oMxRPY]
 
 ## Releases and Version History
 
